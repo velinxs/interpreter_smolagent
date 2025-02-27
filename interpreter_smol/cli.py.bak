@@ -42,12 +42,12 @@ class Interpreter:
         """Initialize the model based on type."""
         if self.model_type.lower() == "gemini":
             # Import Gemini model adapter
-            if importlib.util.find_spec("google.genai") is None:
-                raise ImportError("Google GenAI package not installed. Install with: pip install google-genai")
+            if importlib.util.find_spec("google.generativeai") is None:
+                raise ImportError("Google Generative AI package not installed. Install with: pip install google-generativeai")
             
             from interpreter_smol.gemini_model import GeminiModel
             return GeminiModel(
-                model_id=self.model_id or "gemini-2.0-flash",
+                model_id=self.model_id or "gemini-1.5-pro",
                 api_key=self.api_key or os.environ.get("GOOGLE_API_KEY"),
                 temperature=self.temperature,
                 max_tokens=self.max_tokens,
@@ -177,8 +177,8 @@ def main():
             
     except ImportError as e:
         print(f"Error: {e}")
-        if "google-genai" in str(e):
-            print("Install Google GenAI package with: pip install google-genai")
+        if "google-generativeai" in str(e):
+            print("Install Google Generative AI package with: pip install google-generativeai")
         sys.exit(1)
     except ValueError as e:
         print(f"Error: {e}")

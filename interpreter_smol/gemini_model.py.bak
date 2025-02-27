@@ -1,6 +1,5 @@
 """
 gemini_model.py - Google Generative AI (Gemini) model adapter for SmolaGents
-using the new Google GenAI SDK (google-genai v1.0)
 """
 
 import os
@@ -19,7 +18,7 @@ try:
     GEMINI_AVAILABLE = True
 except ImportError:
     GEMINI_AVAILABLE = False
-    logger.warning("Google GenAI package not installed. Install with: pip install google-genai")
+    logger.warning("Google Generative AI package not installed. Install with: pip install google-generativeai")
 
 
 class GeminiModel(Model):
@@ -28,10 +27,9 @@ class GeminiModel(Model):
     
     This model adapter allows using Google's Gemini models with the SmolaGents framework,
     providing proper handling of tool calls, message formatting, and response parsing.
-    Uses the new google-genai v1.0 SDK.
     
     Args:
-        model_id (str, optional): The Gemini model to use. Defaults to "gemini-2.0-flash".
+        model_id (str, optional): The Gemini model to use. Defaults to "gemini-1.5-pro".
         api_key (str, optional): API key for Gemini. If not provided, will look for GOOGLE_API_KEY environment variable.
         temperature (float, optional): Controls randomness in generation. Defaults to 0.7.
         max_tokens (int, optional): Maximum tokens to generate. Defaults to 8192.
@@ -42,7 +40,7 @@ class GeminiModel(Model):
         from gemini_model import GeminiModel
         from smolagents import CodeAgent
         
-        model = GeminiModel(model_id="gemini-2.0-flash")
+        model = GeminiModel(model_id="gemini-1.5-pro")
         agent = CodeAgent(tools=[], model=model)
         agent.run("Write a function to calculate prime numbers")
         ```
@@ -50,21 +48,21 @@ class GeminiModel(Model):
     
     def __init__(
         self,
-        model_id: str = "gemini-2.0-flash",
+        model_id: str = "gemini-1.5-pro",
         api_key: Optional[str] = None,
         temperature: float = 0.7,
         max_tokens: int = 8192,
         **kwargs
     ):
         if not GEMINI_AVAILABLE:
-            raise ImportError("Google GenAI package not installed. Install with: pip install google-genai")
+            raise ImportError("Google Generative AI package not installed. Install with: pip install google-generativeai")
         
         super().__init__(**kwargs)
         self.model_id = model_id
         self.temperature = temperature
         self.max_tokens = max_tokens
         
-        # Initialize the Gemini API client
+        # Initialize the Gemini API
         if api_key is None:
             api_key = os.getenv("GOOGLE_API_KEY")
 
@@ -72,6 +70,9 @@ class GeminiModel(Model):
             raise ValueError("API key is required. Set GOOGLE_API_KEY environment variable or pass api_key.")
             
         self.client = genai.Client(api_key=api_key)
+            
+        genai.configure(api_key=api_key)
+        self.model = genai.GenerativeModel(self.model_id)
         self.last_input_token_count = 0
         self.last_output_token_count = 0
     
@@ -96,70 +97,44 @@ class GeminiModel(Model):
         Returns:
             ChatMessage: The model's response as a ChatMessage object.
         """
-        # Check if streaming is requested
-        stream = kwargs.get("stream", False)
-        
-        # Convert messages to Gemini's format
-        gemini_messages = self._convert_messages_to_gemini_format(messages)
-        
-        # Set up config with optional parameters
-        config = types.GenerateContentConfig(
-            temperature=kwargs.get("temperature", self.temperature),
-            top_p=kwargs.get("top_p", 0.95),
-            top_k=kwargs.get("top_k", 40),
-            max_output_tokens=kwargs.get("max_tokens", self.max_tokens),
-            stop_sequences=stop_sequences
+        # Prepare completion kwargs and convert to Gemini format
+        completion_kwargs = self._prepare_completion_kwargs(
+            messages=messages,
+            stop_sequences=stop_sequences,
+            grammar=grammar,
+            tools_to_call_from=tools_to_call_from,
+            convert_images_to_image_urls=True,
+            **kwargs
         )
         
-        # Handle tools if provided
-        tool_config = self._prepare_tool_config(tools_to_call_from) if tools_to_call_from else None
+        # Convert messages to Gemini's format
+        gemini_messages = self._convert_messages_to_gemini_format(completion_kwargs["messages"])
         
-        try:
-            if stream:
-                # Use streaming API
-                return self._handle_streaming(
-                    gemini_messages=gemini_messages,
-                    config=config,
-                    tool_config=tool_config,
-                    tools_to_call_from=tools_to_call_from
-                )
-            
-            # Standard non-streaming generation
-            if tool_config:
-                # Generate response with tools
-                response = self.client.models.generate_content(
-                    model=self.model_id,
-                    contents=gemini_messages,
-                    config=config,
-                    tools=tool_config,
-                )
-            else:
-                # Standard generation without tools
-                response = self.client.models.generate_content(
-                    model=self.model_id,
-                    contents=gemini_messages,
-                    config=config,
-                )
-            
-            # Process and return response
-            return self._process_gemini_response(response, tools_to_call_from)
+        # Generate response
+        response = self.client.models.generate_content(
+            model=self.model_id,
+            contents=gemini_messages,
+            config=types.GenerateContentConfig(
+                temperature=kwargs.get("temperature", 0.7),
+                top_p=kwargs.get("top_p", 0.95),
+                top_k=kwargs.get("top_k", 40),
+                max_output_tokens=kwargs.get("max_tokens", 8192),
+                stop_sequences=stop_sequences,
+            ),
+            tools=tool_configs if tools_to_call_from else None,
+            tool_config=types.ToolConfig(
+                function_calling_config=types.FunctionCallingConfig(mode="AUTO")
+            ) if tools_to_call_from else None,
+        )
         
-        except Exception as e:
-            logger.error(f"Error generating content: {str(e)}")
-            # Return empty response in case of error
-            return ChatMessage(
-                role="assistant",
-                content=f"Error generating content: {str(e)}",
-                tool_calls=None,
-                raw=None
-            )
+        # Process response
+        return self._process_gemini_response(response, tools_to_call_from)
     
     def _convert_messages_to_gemini_format(self, messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Convert SmolaGents messages to Gemini's format."""
+        """Convert messages to Gemini's format."""
         gemini_messages = []
         
         for message in messages:
-            # Map SmolaGents roles to Gemini roles
             role = "user" if message["role"] == MessageRole.USER else "model"
             
             if isinstance(message["content"], list):
@@ -191,19 +166,68 @@ class GeminiModel(Model):
         
         return gemini_messages
     
-    def _prepare_tool_config(self, tools_to_call_from):
-        """Prepare tool configurations for Gemini using the new SDK format."""
-        tools = []
+    def _generate_gemini_response(
+        self,
+        gemini_messages: List[Dict[str, Any]],
+        stop_sequences: Optional[List[str]],
+        tools_to_call_from: Optional[List],
+        completion_kwargs: Dict[str, Any]
+    ) -> Any:
+        """Generate a response from Gemini API."""
+        # Create generation config
+        generation_config = genai.GenerationConfig(
+            temperature=completion_kwargs.get("temperature", self.temperature),
+            top_p=completion_kwargs.get("top_p", 0.95),
+            top_k=completion_kwargs.get("top_k", 40),
+            max_output_tokens=completion_kwargs.get("max_tokens", self.max_tokens),
+            stop_sequences=stop_sequences,
+        )
+        
+        if tools_to_call_from:
+            # Configure tools for Gemini
+            tool_configs = self._prepare_tool_configs(tools_to_call_from)
+            
+            try:
+                # Generate response with tools
+                response = self.model.generate_content(
+                    gemini_messages,
+                    generation_config=generation_config,
+                    tools=tool_configs,
+                    tool_config={"function_calling_config": {"mode": "auto"}},
+                )
+            except Exception as e:
+                logger.error(f"Error generating content with tools: {str(e)}")
+                # Fallback to standard generation
+                response = self.model.generate_content(
+                    gemini_messages,
+                    generation_config=generation_config,
+                )
+        else:
+            # Standard generation without tools
+            response = self.model.generate_content(
+                gemini_messages,
+                generation_config=generation_config,
+            )
+        
+        return response
+    
+    def _prepare_tool_configs(self, tools_to_call_from):
+        """Prepare tool configurations for Gemini."""
+        tool_configs = []
         
         for tool in tools_to_call_from:
-            function_declaration = types.FunctionDeclaration(
-                name=tool.name,
-                description=tool.description,
-                parameters=types.Schema(
-                    type="OBJECT",
-                    properties={},
-                    required=[]
-                )
+            tool_config = types.Tool(
+                function_declarations=[
+                    types.FunctionDeclaration(
+                        name=tool.name,
+                        description=tool.description,
+                        parameters=types.Schema(
+                            type="OBJECT",
+                            properties={},
+                            required=[]
+                        )
+                    )
+                ]
             )
             
             # Add parameters
@@ -212,91 +236,21 @@ class GeminiModel(Model):
                 if param_type == "any":
                     param_type = "string"  # Gemini doesn't support 'any' type
                 
-                function_declaration.parameters.properties[param_name] = {
+                tool_config["function_declarations"][0]["parameters"]["properties"][param_name] = {
                     "type": param_type,
                     "description": param_details.get("description", "")
                 }
                 
                 # Add required parameters
                 if not param_details.get("nullable", False):
-                    function_declaration.parameters.required.append(param_name)
+                    tool_config["function_declarations"][0]["parameters"]["required"].append(param_name)
             
-            tools.append(types.Tool(function_declarations=[function_declaration]))
+            tool_configs.append(tool_config)
         
-        return tools
-    
-    def _handle_streaming(self, gemini_messages, config, tool_config, tools_to_call_from):
-        """Handle streaming responses from Gemini."""
-        try:
-            # Use the streaming API
-            stream_response = self.client.models.generate_content_stream(
-                model=self.model_id,
-                contents=gemini_messages,
-                config=config,
-                tools=tool_config,
-            )
-            
-            # Accumulate the complete response
-            content = ""
-            tool_calls = None
-            raw_chunks = []
-            
-            for chunk in stream_response:
-                raw_chunks.append(chunk)
-                
-                # Extract text content from chunk
-                if hasattr(chunk, "text"):
-                    content += chunk.text
-                elif hasattr(chunk, "candidates") and chunk.candidates:
-                    for candidate in chunk.candidates:
-                        if hasattr(candidate, "content") and candidate.content:
-                            if hasattr(candidate.content, "parts"):
-                                for part in candidate.content.parts:
-                                    if hasattr(part, "text") and part.text:
-                                        content += part.text
-                
-                # Check for function calls in chunk
-                if tools_to_call_from and hasattr(chunk, "candidates") and chunk.candidates:
-                    for candidate in chunk.candidates:
-                        if hasattr(candidate, "content") and candidate.content:
-                            if hasattr(candidate.content, "parts"):
-                                for part in candidate.content.parts:
-                                    if hasattr(part, "function_call"):
-                                        if tool_calls is None:
-                                            tool_calls = []
-                                        
-                                        # Create a tool call from the function call
-                                        function_call = part.function_call
-                                        tool_calls.append(
-                                            ChatMessageToolCall(
-                                                id=str(uuid.uuid4()),
-                                                type="function",
-                                                function=ChatMessageToolCallDefinition(
-                                                    name=function_call.name,
-                                                    arguments=function_call.args,
-                                                )
-                                            )
-                                        )
-            
-            # Create a combined response from the stream
-            return ChatMessage(
-                role="assistant",
-                content=content if not tool_calls else None,
-                tool_calls=tool_calls,
-                raw=raw_chunks
-            )
-            
-        except Exception as e:
-            logger.error(f"Error in streaming: {str(e)}")
-            return ChatMessage(
-                role="assistant",
-                content=f"Error in streaming: {str(e)}",
-                tool_calls=None,
-                raw=None
-            )
+        return tool_configs
     
     def _process_gemini_response(self, response, tools_to_call_from):
-        """Process Gemini response into ChatMessage format using the new SDK structure."""
+        """Process Gemini response into ChatMessage format."""
         # Extract token counts if available
         if hasattr(response, "usage_metadata"):
             self.last_input_token_count = getattr(response.usage_metadata, "prompt_token_count", 0)
@@ -312,16 +266,18 @@ class GeminiModel(Model):
         elif hasattr(response, "candidates") and response.candidates:
             candidate = response.candidates[0]
             if hasattr(candidate, "content") and candidate.content:
-                if hasattr(candidate.content, "parts"):
+                if hasattr(candidate.content, "text"):
+                    content = candidate.content.text
+                elif hasattr(candidate.content, "parts"):
                     for part in candidate.content.parts:
-                        if hasattr(part, "text") and part.text:
+                        if hasattr(part, "text"):
                             content += part.text
         
         # Check for function calls
         if tools_to_call_from and hasattr(response, "candidates") and response.candidates:
             candidate = response.candidates[0]
             if hasattr(candidate, "content") and candidate.content:
-                if hasattr(candidate.content, "parts"):
+                if hasattr(candidate.content, "parts") and candidate.content.parts:
                     for part in candidate.content.parts:
                         if hasattr(part, "function_call"):
                             if tool_calls is None:
@@ -361,7 +317,7 @@ class GeminiModel(Model):
     def from_dict(cls, data: Dict[str, Any]) -> "GeminiModel":
         """Create a model instance from a dictionary."""
         return cls(
-            model_id=data.get("model_id", "gemini-2.0-flash"),
+            model_id=data.get("model_id", "gemini-1.5-pro"),
             temperature=data.get("temperature", 0.7),
             max_tokens=data.get("max_tokens", 8192),
         )

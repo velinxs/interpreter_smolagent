@@ -4,7 +4,7 @@ This guide helps Open-Interpreter users transition to interpreter-smol. The migr
 
 ## Why Migrate?
 
-- **Better Gemini Support**: Native integration with Google's Gemini models
+- **Native Gemini 2.0 Support**: First-class integration with Google's latest Gemini models
 - **More Robust Framework**: Built on SmolaGents, a well-maintained agent framework
 - **Enhanced Security**: Better code execution isolation options
 - **Active Development**: Regular updates and community support
@@ -163,7 +163,7 @@ from smolagents.default_tools import TOOL_MAPPING
 from gemini_model import GeminiModel
 
 # Create model
-model = GeminiModel(model_id="gemini-1.5-pro")
+model = GeminiModel(model_id="gemini-2.0-flash")
 
 # Create agent with custom system prompt
 agent = CodeAgent(
@@ -185,12 +185,12 @@ agent.run("Analyze this dataset")
 
 **Error:**
 ```
-ImportError: Google Generative AI package not installed
+ImportError: Google GenAI package not installed
 ```
 
 **Solution:**
 ```bash
-pip install google-generativeai
+pip install google-genai
 ```
 
 ### Issue: Model Not Found
@@ -202,7 +202,7 @@ ValueError: Unable to find model with ID: gemini-xyz
 
 **Solution:**
 Check that you're using a valid model ID for the provider:
-- Gemini: "gemini-1.5-pro", "gemini-1.5-flash"
+- Gemini: "gemini-2.0-flash", "gemini-2.0-pro"
 - OpenAI: "gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo" 
 - Anthropic: "claude-3-5-sonnet-20240620", "claude-3-opus-20240229"
 
@@ -225,4 +225,4 @@ print(list(TOOL_MAPPING.keys()))
 
 - [SmolaGents Documentation](https://huggingface.co/docs/smolagents)
 - [interpreter-smol GitHub Repository](https://github.com/your-username/interpreter-smol)
-- [Google Generative AI Documentation](https://ai.google.dev/docs)
+- [Google GenAI Documentation](https://ai.google.dev/docs)

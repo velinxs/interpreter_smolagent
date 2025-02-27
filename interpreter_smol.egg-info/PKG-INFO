@@ -13,9 +13,9 @@ Classifier: Programming Language :: Python :: 3.9
 Classifier: Programming Language :: Python :: 3.10
 Requires-Dist: smolagents>=1.0.0
 Provides-Extra: gemini
-Requires-Dist: google-generativeai>=0.3.0; extra == "gemini"
+Requires-Dist: google-genai>=1.0.0; extra == "gemini"
 Provides-Extra: complete
-Requires-Dist: google-generativeai>=0.3.0; extra == "complete"
+Requires-Dist: google-genai>=1.0.0; extra == "complete"
 Requires-Dist: litellm>=1.0.0; extra == "complete"
 Requires-Dist: pillow>=9.0.0; extra == "complete"
 Requires-Dist: numpy>=1.20.0; extra == "complete"

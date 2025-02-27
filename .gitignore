@@ -1,1 +1,6 @@
 .env.local
+venv/
+venv
+myenv
+.env
+interpreter_smol.egg-info

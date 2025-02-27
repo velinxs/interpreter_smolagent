@@ -11,7 +11,7 @@ This guide will help you set up and use `interpreter-smol`, a thin wrapper aroun
 pip install smolagents
 
 # Install Gemini support (required for default model)
-pip install google-generativeai
+pip install google-genai
 ```
 
 2. Download and install the interpreter-smol package:
@@ -100,7 +100,7 @@ The following tools are available:
 
 ## Supported Models
 
-- **Gemini** (default): Google's Gemini models
+- **Gemini** (default): Google's Gemini 2.0 models
 - **OpenAI**: GPT-3.5, GPT-4 models
 - **Anthropic**: Claude models
 - **Hugging Face**: Models hosted on Hugging Face
@@ -129,7 +129,7 @@ from gemini_model import GeminiModel
 from smolagents.default_tools import TOOL_MAPPING
 
 # Create a custom Gemini model
-model = GeminiModel(model_id="gemini-1.5-pro")
+model = GeminiModel(model_id="gemini-2.0-flash")
 
 # Create an agent with specific tools
 agent = CodeAgent(
@@ -147,7 +147,7 @@ agent.run("Your complex task here")
 
 interpreter-smol offers several advantages compared to Open-Interpreter:
 
-1. **Better Gemini support**: Native integration with Google's Gemini models
+1. **Native Gemini 2.0 support**: First-class integration with Google's latest Gemini models
 2. **Modern agent framework**: Built on SmolaGents, providing a more robust foundation
 3. **Enhanced security**: Better code execution security options
 4. **Simplified implementation**: Thin wrapper focused on essential functionality
