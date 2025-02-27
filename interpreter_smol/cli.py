@@ -11,6 +11,7 @@ from typing import Optional, List, Dict, Any, Union
 # Main SmolaGents imports
 from smolagents import CodeAgent
 from smolagents.default_tools import TOOL_MAPPING
+from interpreter_smol.unrestricted_python import UnrestrictedPythonInterpreter
 
 class Interpreter:
     """Simple Open-Interpreter-like interface built on SmolaGents."""
@@ -20,10 +21,10 @@ class Interpreter:
         model: str = "gemini",
         model_id: Optional[str] = None,
         api_key: Optional[str] = None,
-        tools: List[str] = ["python_interpreter", "web_search"],
-        imports: List[str] = ["numpy", "pandas", "matplotlib.pyplot"],
+        tools: List[str] = ["unrestricted_python", "web_search"],  # Changed default to unrestricted_python
+        imports: List[str] = ["os", "sys", "numpy", "pandas", "matplotlib.pyplot"],
         temperature: float = 0.7,
-        max_tokens: int = 4096,
+        max_tokens: int = 8192,
         verbose: bool = False
     ):
         """Initialize an interpreter with specified model and tools."""
@@ -41,13 +42,9 @@ class Interpreter:
     def _initialize_model(self):
         """Initialize the model based on type."""
         if self.model_type.lower() == "gemini":
-            # Import Gemini model adapter
-            if importlib.util.find_spec("google.genai") is None:
-                raise ImportError("Google GenAI package not installed. Install with: pip install google-genai")
-            
-            from interpreter_smol.gemini_model import GeminiModel
-            return GeminiModel(
-                model_id=self.model_id or "gemini-2.0-flash",
+            from smolagents import LiteLLMModel
+            return LiteLLMModel(
+                model_id=self.model_id or "gemini/gemini-2.0-flash",
                 api_key=self.api_key or os.environ.get("GOOGLE_API_KEY"),
                 temperature=self.temperature,
                 max_tokens=self.max_tokens,
@@ -63,7 +60,7 @@ class Interpreter:
         elif self.model_type.lower() == "anthropic":
             from smolagents import LiteLLMModel
             return LiteLLMModel(
-                model_id=self.model_id or "claude-3-5-sonnet-20240620",
+                model_id=self.model_id or "claude-3-7-sonnet-latest",
                 api_key=self.api_key or os.environ.get("ANTHROPIC_API_KEY"),
                 temperature=self.temperature,
                 max_tokens=self.max_tokens,
@@ -81,19 +78,34 @@ class Interpreter:
     
     def _initialize_agent(self, tool_names, imports):
         """Initialize the CodeAgent with specified tools."""
+        # Expand imports to include everything needed for system access
+        all_imports = imports + [
+            "os", "sys", "subprocess", "shutil", "glob", "pathlib", "json", "csv",
+            "platform", "pwd", "grp", "tempfile", "io", "stat", "fnmatch", "time",
+            "datetime", "calendar", "signal", "threading", "multiprocessing", "socket",
+            "requests", "urllib", "ftplib", "ssl", "getpass"
+        ]
+
         tools = []
         for tool_name in tool_names:
-            if tool_name in TOOL_MAPPING:
-                tools.append(TOOL_MAPPING[tool_name]())
+            if tool_name == "unrestricted_python":
+                tool = UnrestrictedPythonInterpreter(authorized_imports=all_imports)
+                tools.append(tool)
+            elif tool_name in TOOL_MAPPING:
+                tool = TOOL_MAPPING[tool_name]()
+                tools.append(tool)
             else:
-                print(f"Warning: Unknown tool '{tool_name}'. Available tools: {', '.join(TOOL_MAPPING.keys())}")
-        
-        return CodeAgent(
+                available_tools = list(TOOL_MAPPING.keys()) + ["unrestricted_python"]
+                print(f"Warning: Unknown tool '{tool_name}'. Available tools: {', '.join(available_tools)}")
+
+        # Create agent with all features enabled and default system prompt
+        agent = CodeAgent(
             tools=tools,
             model=self.model,
-            additional_authorized_imports=imports,
+            additional_authorized_imports=all_imports,
             verbosity_level=2 if self.verbose else 1,
         )
+        return agent
     
     def chat(self, initial_prompt: Optional[str] = None):
         """Start an interactive chat session."""
@@ -127,7 +139,7 @@ def main():
     parser.add_argument("--model-id", default=None, 
                         help="Specific model ID (defaults to best model for provider)")
     parser.add_argument("--tools", nargs="*", 
-                        default=["python_interpreter", "web_search"],
+                        default=["unrestricted_python", "web_search"],
                         help="Tools to enable")
     parser.add_argument("--api-key", "-k", default=None, 
                         help="API key for the model provider")
