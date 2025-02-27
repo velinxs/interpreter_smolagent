@@ -1,0 +1,29 @@
+Metadata-Version: 2.2
+Name: interpreter-smol
+Version: 0.1.0
+Summary: A simplified Open-Interpreter alternative built on SmolaGents
+Author: velinxs
+Author-email: velinxs1@gmail.com
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Requires-Dist: smolagents>=1.0.0
+Provides-Extra: gemini
+Requires-Dist: google-generativeai>=0.3.0; extra == "gemini"
+Provides-Extra: complete
+Requires-Dist: google-generativeai>=0.3.0; extra == "complete"
+Requires-Dist: litellm>=1.0.0; extra == "complete"
+Requires-Dist: pillow>=9.0.0; extra == "complete"
+Requires-Dist: numpy>=1.20.0; extra == "complete"
+Requires-Dist: pandas>=1.3.0; extra == "complete"
+Requires-Dist: matplotlib>=3.4.0; extra == "complete"
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: summary

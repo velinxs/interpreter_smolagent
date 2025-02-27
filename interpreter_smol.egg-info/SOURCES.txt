@@ -1,0 +1,11 @@
+README.md
+setup.py
+interpreter_smol/__init__.py
+interpreter_smol/cli.py
+interpreter_smol/gemini_model.py
+interpreter_smol.egg-info/PKG-INFO
+interpreter_smol.egg-info/SOURCES.txt
+interpreter_smol.egg-info/dependency_links.txt
+interpreter_smol.egg-info/entry_points.txt
+interpreter_smol.egg-info/requires.txt
+interpreter_smol.egg-info/top_level.txt

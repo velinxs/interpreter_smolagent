@@ -1,0 +1,2 @@
+[console_scripts]
+interpreter-smol = interpreter_smol.cli:main
