@@ -54,7 +54,7 @@ interpreter-smol
 interpreter-smol --model openai "Write a function to calculate prime numbers"
 
 # Enable specific tools
-interpreter-smol --tools python_interpreter web_search "Find the current Bitcoin price and plot it"
+interpreter-smol --tools unrestricted_python web_search "Find the current Bitcoin price and plot it"
 
 # Allow additional Python imports
 interpreter-smol --imports numpy pandas matplotlib.pyplot scipy "Create a visualization of the sine function"
@@ -83,7 +83,7 @@ interpreter.chat("Help me analyze this dataset")
 custom_interpreter = Interpreter(
     model="anthropic",
     model_id="claude-3-5-sonnet-20240620",
-    tools=["python_interpreter", "web_search", "visit_webpage"],
+    tools=["unrestricted_python", "web_search", "visit_webpage"],
     imports=["numpy", "pandas", "scipy", "matplotlib.pyplot"],
     verbose=True
 )
@@ -94,7 +94,7 @@ custom_interpreter.run("Analyze recent stock market trends")
 
 The following tools are available:
 
-- `python_interpreter`: Execute Python code
+- `unrestricted_python`: Execute Python code
 - `web_search`: Search the web with DuckDuckGo
 - `visit_webpage`: Visit and extract content from a webpage
 
@@ -112,7 +112,7 @@ The following tools are available:
 | `--model`, `-m` | Model provider | `gemini` |
 | `--model-id` | Specific model identifier | Depends on provider |
 | `--api-key`, `-k` | API key | Uses environment variable |
-| `--tools` | Tools to enable | `python_interpreter`, `web_search` |
+| `--tools` | Tools to enable | `unrestricted_python`, `web_search` |
 | `--imports` | Additional Python modules to allow | `numpy`, `pandas`, `matplotlib.pyplot` |
 | `--temperature`, `-t` | Temperature for generation | `0.7` |
 | `--max-tokens` | Maximum tokens in response | `4096` |
@@ -125,15 +125,15 @@ For more advanced use cases, you can access the SmolaGents functionality directl
 
 ```python
 from smolagents import CodeAgent
-from gemini_model import GeminiModel
+from smolagents import LiteLLMModel
 from smolagents.default_tools import TOOL_MAPPING
 
 # Create a custom Gemini model
-model = GeminiModel(model_id="gemini-2.0-flash")
+model = LiteLLMModel(model_id="gemini/gemini-2.0-flash")
 
 # Create an agent with specific tools
 agent = CodeAgent(
-    tools=[TOOL_MAPPING["python_interpreter"](), TOOL_MAPPING["web_search"]()],
+    tools=[TOOL_MAPPING["unrestricted_python"](), TOOL_MAPPING["web_search"]()],
     model=model,
     additional_authorized_imports=["numpy", "pandas"],
     verbosity_level=2
