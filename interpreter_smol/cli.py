@@ -11,7 +11,7 @@ from typing import Optional, List, Dict, Any, Union
 # Main SmolaGents imports
 from smolagents import CodeAgent
 from smolagents.default_tools import TOOL_MAPPING
-from interpreter_smol.unrestricted_python import UnrestrictedPythonInterpreter
+from interpreter_smol.enhanced_python import EnhancedPythonInterpreter
 
 class Interpreter:
     """Simple Open-Interpreter-like interface built on SmolaGents."""
@@ -21,7 +21,7 @@ class Interpreter:
         model: str = "gemini",
         model_id: Optional[str] = None,
         api_key: Optional[str] = None,
-        tools: List[str] = ["unrestricted_python", "web_search"],  # Changed default to unrestricted_python
+        tools: List[str] = ["enhanced_python", "web_search"],  # Using our enhanced Python interpreter
         imports: List[str] = ["os", "sys", "numpy", "pandas", "matplotlib.pyplot"],
         temperature: float = 0.7,
         max_tokens: int = 8192,
@@ -88,14 +88,14 @@ class Interpreter:
 
         tools = []
         for tool_name in tool_names:
-            if tool_name == "unrestricted_python":
-                tool = UnrestrictedPythonInterpreter(authorized_imports=all_imports)
+            if tool_name == "unrestricted_python" or tool_name == "enhanced_python":
+                tool = EnhancedPythonInterpreter(authorized_imports=all_imports)
                 tools.append(tool)
             elif tool_name in TOOL_MAPPING:
                 tool = TOOL_MAPPING[tool_name]()
                 tools.append(tool)
             else:
-                available_tools = list(TOOL_MAPPING.keys()) + ["unrestricted_python"]
+                available_tools = list(TOOL_MAPPING.keys()) + ["unrestricted_python", "enhanced_python"]
                 print(f"Warning: Unknown tool '{tool_name}'. Available tools: {', '.join(available_tools)}")
 
         # Create agent with all features enabled and default system prompt
@@ -139,7 +139,7 @@ def main():
     parser.add_argument("--model-id", default=None, 
                         help="Specific model ID (defaults to best model for provider)")
     parser.add_argument("--tools", nargs="*", 
-                        default=["unrestricted_python", "web_search"],
+                        default=["enhanced_python", "web_search"],
                         help="Tools to enable")
     parser.add_argument("--api-key", "-k", default=None, 
                         help="API key for the model provider")
