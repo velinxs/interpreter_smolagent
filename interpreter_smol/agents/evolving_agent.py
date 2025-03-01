@@ -13,7 +13,7 @@ import yaml
 from pathlib import Path
 from smolagents import CodeAgent, tool
 from smolagents.default_tools import DuckDuckGoSearchTool, VisitWebpageTool
-from interpreter_smol.enhanced_python import EnhancedPythonInterpreter
+from interpreter_smol.tools import EnhancedPythonInterpreter
 
 class EvolvingAgentSystem:
     """
@@ -102,32 +102,30 @@ class EvolvingAgentSystem:
     
     def _add_agent_management_tools(self):
         """Add tools for agent management to the interpreter."""
-        
         @tool
         def create_agent(name: str, description: str, tools: List[str], code: str) -> str:
-            """
-            Create a new agent with specified configuration and save it to the workspace.
-            
+            """Create a new agent with specified configuration and save it to the workspace.
+
             Args:
-                name: The name of the agent
-                description: A description of what the agent does
-                tools: List of tool names the agent should have access to
-                code: Python code that defines the agent's custom tools and behavior
-            
+                name: The name of the agent.
+                description: a description of what the agent does.
+                tools: List of tool names the agent should have access to.
+                code: Python code that defines the agent's custom tools and behavior.
+
             Returns:
-                str: Success message or error
+                str: Success message or error.
             """
             try:
                 # Create agent directory
                 agent_dir = os.path.join(self.workspace_dir, name)
                 if not os.path.exists(agent_dir):
                     os.makedirs(agent_dir)
-                
+
                 # Save the agent code
                 code_path = os.path.join(agent_dir, f"{name}_agent.py")
                 with open(code_path, 'w') as f:
                     f.write(code)
-                
+
                 # Register the agent
                 self.agent_registry[name] = {
                     "name": name,
@@ -136,50 +134,51 @@ class EvolvingAgentSystem:
                     "code_path": code_path,
                     "created_at": str(time.time())
                 }
-                
+
                 # Save the registry
                 self._save_agent_registry()
-                
+
                 return f"Agent '{name}' created successfully. Code saved to {code_path}"
             except Exception as e:
                 return f"Error creating agent: {str(e)}"
-        
+
         @tool
         def list_agents() -> str:
-            """
-            List all available agents in the registry.
-            
+            """list agents.
+
+            Args:
+                name: The name of the agent to run.
+                
             Returns:
-                str: JSON string containing all registered agents
+                str: The result from the agent.
             """
             return json.dumps(self.agent_registry, indent=2)
-        
+
         @tool
         def run_agent(name: str, task: str) -> str:
-            """
-            Run a specific agent on a given task.
-            
+            """Run a specific agent on a given task.
+
             Args:
-                name: The name of the agent to run
-                task: The task to run the agent on
-            
+                name: The name of the agent to run.
+                task: The task to run the agent on.
+
             Returns:
-                str: The result from the agent
+                str: The result from the agent.
             """
             if name not in self.agent_registry:
                 return f"Error: Agent '{name}' not found in registry."
-            
+
             try:
                 # Import the agent module
                 agent_info = self.agent_registry[name]
                 sys.path.append(os.path.dirname(agent_info["code_path"]))
                 module_name = os.path.basename(agent_info["code_path"]).replace(".py", "")
-                
+
                 # Use importlib to load the module
                 spec = importlib.util.spec_from_file_location(module_name, agent_info["code_path"])
                 module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module)
-                
+
                 # Run the agent
                 if hasattr(module, "run"):
                     result = module.run(task)
@@ -188,52 +187,54 @@ class EvolvingAgentSystem:
                     return f"Error: Agent '{name}' does not have a 'run' function."
             except Exception as e:
                 return f"Error running agent '{name}': {str(e)}"
-        
+
         @tool
         def delete_agent(name: str) -> str:
-            """
-            Delete an agent from the registry.
-            
+            """Delete an agent from the registry.
+
             Args:
-                name: The name of the agent to delete
-            
+                name: The name of the agent to delete.
+
             Returns:
-                str: Success message or error
+                str: Success message or error.
             """
             if name not in self.agent_registry:
                 return f"Error: Agent '{name}' not found in registry."
-            
+
             try:
                 # Remove the agent directory
                 agent_dir = os.path.dirname(self.agent_registry[name]["code_path"])
                 if os.path.exists(agent_dir):
                     import shutil
                     shutil.rmtree(agent_dir)
-                
+
                 # Remove from registry
                 del self.agent_registry[name]
                 self._save_agent_registry()
-                
+
                 return f"Agent '{name}' deleted successfully."
             except Exception as e:
                 return f"Error deleting agent '{name}': {str(e)}"
-        
-        # Add these tools to the interpreter's agent
-        self.interpreter.agent.tools.extend([
-            create_agent,
-            list_agents,
-            run_agent,
-            delete_agent
-        ])
-    
-    def chat(self, initial_prompt: Optional[str] = None):
-        """Start an interactive chat session with the evolving agent system."""
-        self.interpreter.chat(initial_prompt)
-    
-    def run(self, prompt: str):
-        """Run a single prompt through the evolving agent system."""
-        return self.interpreter.run(prompt)
 
+
+        # --- CHANGE 2: Conditional logic AFTER tool definitions ---
+        if isinstance(self.interpreter.agent, dict) and 'tools' in self.interpreter.agent:
+            # --- CHANGE 3: Use .update() for dictionaries ---
+            self.interpreter.agent['tools'].update({
+                create_agent.name: create_agent,  # Use .name for keys
+                list_agents.name: list_agents,
+                run_agent.name: run_agent,
+                delete_agent.name: delete_agent
+            })
+        elif isinstance(self.interpreter.agent.tools, list):
+            self.interpreter.agent.tools.extend([
+                create_agent,
+                list_agents,
+                run_agent,
+                delete_agent,
+            ])
+        else:
+            print("Warning: Could not add agent management tools.  Interpreter structure is unexpected.")
 
 def main():
     """Command line interface for the evolving agent system."""
@@ -258,7 +259,7 @@ def main():
                         help="Start in interactive mode")
     parser.add_argument("-v", "--verbose", action="store_true", 
                         help="Enable verbose output")
-    
+
     args = parser.parse_args()
     
     # Set up environment variables for API keys if provided
@@ -286,7 +287,10 @@ def main():
         
         # Run in appropriate mode
         if args.interactive or not args.prompt:
-            system.chat(args.prompt)
+            if hasattr(system.interpreter, "chat"):
+                system.interpreter.chat(args.prompt)  # Call chat method directly on interpreter
+            else:
+                system.run(args.prompt) # Default to run
         else:
             system.run(args.prompt)
             

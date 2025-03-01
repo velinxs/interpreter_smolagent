@@ -11,7 +11,7 @@ from typing import Optional, List, Dict, Any, Union
 # Main SmolaGents imports
 from smolagents import CodeAgent
 from smolagents.default_tools import TOOL_MAPPING
-from interpreter_smol.unrestricted_python import UnrestrictedPythonInterpreter
+from interpreter_smol.tools import EnhancedPythonInterpreter
 
 class Interpreter:
     """Simple Open-Interpreter-like interface built on SmolaGents."""
@@ -21,7 +21,7 @@ class Interpreter:
         model: str = "gemini",
         model_id: Optional[str] = None,
         api_key: Optional[str] = None,
-        tools: List[str] = ["unrestricted_python", "web_search"],  # Changed default to unrestricted_python
+        tools: List[str] = ["enhanced_python", "web_search"],  # Using our enhanced Python interpreter
         imports: List[str] = ["os", "sys", "numpy", "pandas", "matplotlib.pyplot"],
         temperature: float = 0.7,
         max_tokens: int = 8192,
@@ -82,54 +82,28 @@ class Interpreter:
         all_imports = imports + [
             "os", "sys", "subprocess", "shutil", "glob", "pathlib", "json", "csv",
             "platform", "pwd", "grp", "tempfile", "io", "stat", "fnmatch", "time",
+            "datetime", "calendar", "signal", "threading", "multiprocessing", "socket",
             "requests", "urllib", "ftplib", "ssl", "getpass"
         ]
 
         tools = []
         for tool_name in tool_names:
-            if tool_name == "unrestricted_python":
-                # Create tool and rename it to match the default Python interpreter name
-                tool = UnrestrictedPythonInterpreter(authorized_imports=all_imports)
-                tool.name = "python_interpreter"  # Override the name to replace default
+            if tool_name == "unrestricted_python" or tool_name == "enhanced_python":
+                tool = EnhancedPythonInterpreter(authorized_imports=all_imports)
                 tools.append(tool)
             elif tool_name in TOOL_MAPPING:
                 tool = TOOL_MAPPING[tool_name]()
                 tools.append(tool)
             else:
-                available_tools = list(TOOL_MAPPING.keys()) + ["unrestricted_python"]
+                available_tools = list(TOOL_MAPPING.keys()) + ["unrestricted_python", "enhanced_python"]
                 print(f"Warning: Unknown tool '{tool_name}'. Available tools: {', '.join(available_tools)}")
 
-        # Create custom prompt templates
-        custom_prompt_templates = {
-            "system_prompt": """You are a helpful AI assistant with coding abilities.
-When asked to execute Python code, use the python_interpreter tool.
-Only use the web_search tool when explicitly asked to search for something online or when you absolutely need current information not in your knowledge base.
-Do not search by default for general questions.
-
-Available tools:
-{% for tool_name, tool in tools.items() %}
-- {{ tool_name }}: {{ tool.description }}
-{% endfor %}
-
-{% if managed_agents %}
-Managed agents:
-{% for agent_name, agent in managed_agents.items() %}
-- {{ agent_name }}: {{ agent.description }}
-{% endfor %}
-{% endif %}
-
-{{ authorized_imports }}"""
-        }
-
-        from smolagents import CodeAgent
         # Create agent with all features enabled and default system prompt
         agent = CodeAgent(
             tools=tools,
             model=self.model,
             additional_authorized_imports=all_imports,
-            add_base_tools=False,  # Prevent adding default tools
             verbosity_level=2 if self.verbose else 1,
-            prompt_templates=custom_prompt_templates
         )
         return agent
     
@@ -165,7 +139,7 @@ def main():
     parser.add_argument("--model-id", default=None, 
                         help="Specific model ID (defaults to best model for provider)")
     parser.add_argument("--tools", nargs="*", 
-                        default=["unrestricted_python", "web_search"],
+                        default=["enhanced_python", "web_search"],
                         help="Tools to enable")
     parser.add_argument("--api-key", "-k", default=None, 
                         help="API key for the model provider")
