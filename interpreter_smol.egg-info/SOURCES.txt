@@ -4,8 +4,6 @@ interpreter_smol/__init__.py
 interpreter_smol/cli.py
 interpreter_smol/cli2.py
 interpreter_smol/gemini_model.py
-interpreter_smol/patches.py
-interpreter_smol/patches_v2.py
 interpreter_smol/unrestricted_python.py
 interpreter_smol.egg-info/PKG-INFO
 interpreter_smol.egg-info/SOURCES.txt

@@ -6,7 +6,7 @@ setup(
     description="A simplified Open-Interpreter alternative built on SmolaGents",
     author="velinxs",
     author_email="velinxs1@gmail.com",
-    packages=find_packages(),
+    packages=find_packages(include=['smolagents', 'smolagents.*']),
     install_requires=[
         "smolagents>=1.0.0",
     ],
