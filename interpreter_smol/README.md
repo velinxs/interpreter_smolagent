@@ -2,6 +2,22 @@
 
 A lightweight, powerful interpreter built on top of [smolagents](https://github.com/huggingface/smolagents). Think of it as a smarter, more flexible version of the original Open Interpreter!
 
+## 🎯 Quick Commands
+
+```bash
+# Launch the standard interpreter
+interpreter-smol
+
+# Launch with specific model
+interpreter-smol --model openai --api-key your-key
+
+# Launch the evolving agent system
+interpreter-evolve
+
+# Launch evolving agent with workspace
+interpreter-evolve -w ./my_agents --model gemini
+```
+
 ## ✨ Key Features
 
 - 🌟 **Enhanced Python Execution**: Full system access with safety when you need it
@@ -48,13 +64,13 @@ interpreter.chat()
 
 ```bash
 # Interactive mode with Gemini
-python -m interpreter_smol.cli -i
+interpreter-smol -i
 
 # Use a specific model
-python -m interpreter_smol.cli -i --model openai --api-key your-api-key
+interpreter-smol -i --model openai --api-key your-api-key
 
 # Run a single command
-python -m interpreter_smol.cli "Create a simple web server in Python"
+interpreter-smol "Create a simple web server in Python"
 ```
 
 ## 🔑 API Keys Setup
@@ -103,7 +119,17 @@ content = read_file("test.txt")
 
 ### Evolving Agent System
 
-Create and manage AI agents that can learn and adapt:
+Launch and interact with evolving agents via CLI:
+
+```bash
+# Start the evolving agent system interactively
+interpreter-evolve -i
+
+# Or with specific settings
+interpreter-evolve -w ./my_agents --model openai --verbose
+```
+
+Or use programmatically:
 
 ```python
 from interpreter_smol.agents import EvolvingAgentSystem
@@ -125,7 +151,20 @@ Name it 'data_analyst'
 
 # Use the agent
 system.interpreter.run("data_analyst, analyze sales.csv and create a trend chart")
+
+# List available agents
+system.interpreter.run("List all available agents")
+
+# Delete an agent
+system.interpreter.run("Delete the 'data_analyst' agent")
 ```
+
+The evolving agent system provides:
+- 🤖 Agent Creation & Management
+- 📁 Persistent Agent Storage
+- 🔧 Tool Distribution
+- 🧠 Custom System Prompts
+- 🔄 Dynamic Loading/Unloading
 
 See [EVOLVE.md](EVOLVE.md) for more details on the Evolving Agent System.
 

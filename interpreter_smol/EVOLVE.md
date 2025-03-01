@@ -1,84 +1,215 @@
-# EVOLVE - Self-Evolving AI Assistant
+# 🧬 EVOLVE - The Self-Evolving Agent System
 
-## What Is This?
+EVOLVE is a powerful AI system that can create, manage, and evolve specialized agents to help with any task. Think of it as a smart AI manager that can build and coordinate a team of AI specialists.
 
-EVOLVE is a smart AI assistant that can:
-1. Talk to you like a normal AI chat
-2. Run Python code to do things on your computer
-3. Create specialized "mini-AIs" (agents) for specific tasks
-4. Remember these agents and use them again later
+## 🚀 Quick Start
 
-Think of it like having one main AI assistant who can create and manage a team of specialized helpers.
+```bash
+# Launch interactive mode
+interpreter-evolve -i
 
-## How to Start It
-
-Just run this command:
-```
-python evolve.py
+# Or with custom settings
+interpreter-evolve --model openai --workspace ./my_agents --verbose
 ```
 
-That's it! You'll get a chat prompt where you can start talking to the AI.
+## 🎯 Key Capabilities
 
-## Simple Things You Can Ask
-
-### Run Code
-```
-Write a Python script that creates a file called "hello.txt" with the text "Hello World" in it.
-```
-
-### Search the Web
-```
-What were the top news stories yesterday?
+### 1. 🤖 Agent Creation
+```python
+# Create a data analysis agent
+interpreter-evolve "Create an agent that can:
+1. Load and clean CSV files
+2. Generate statistical summaries
+3. Create visualizations
+Name it 'data_wizard'"
 ```
 
-### Create a Specialized Agent
+### 2. 📊 Agent Management
+```python
+# List all agents
+interpreter-evolve "List available agents"
+
+# Use an agent
+interpreter-evolve "Have data_wizard analyze sales_2024.csv"
+
+# Delete an agent
+interpreter-evolve "Delete the data_wizard agent"
 ```
-Create an agent that can help me track my daily expenses.
+
+### 3. 🔧 Tool Distribution
+Agents can be equipped with various tools:
+- 💻 Python code execution
+- 🌐 Web search capabilities
+- 📁 File operations
+- 🖼️ Image processing
+- 📊 Data analysis
+
+### 4. 🧠 Smart Persistence
+- Agents persist between sessions
+- Workspace management
+- State preservation
+- Configuration memory
+
+## 💡 Use Cases
+
+### Data Analysis Agent
+```bash
+interpreter-evolve "Create a data analysis agent that can:
+- Read CSV and Excel files
+- Create summary statistics
+- Generate plots
+- Export reports"
 ```
 
-### Use an Agent You Created Before
+### Web Research Agent
+```bash
+interpreter-evolve "Create a research agent that can:
+- Search multiple sources
+- Summarize findings
+- Save citations
+- Generate reports"
 ```
-Use my expense tracker agent to add a $25 lunch expense for today.
+
+### System Monitor Agent
+```bash
+interpreter-evolve "Create a system monitor that:
+- Tracks CPU and memory usage
+- Alerts on high usage
+- Logs performance metrics
+- Generates reports"
 ```
 
-## How It Works (Simple Version)
+## 🛠️ Technical Details
 
-1. **Main AI**: This is your primary assistant that understands what you want
-2. **Code Runner**: Lets the AI run Python code on your computer
-3. **Agent Creator**: Lets the AI make specialized helpers
-4. **Agent Storage**: Remembers all the helpers the AI has created
+### Workspace Structure
+```
+agent_workspace/
+├── agent_registry.json     # Agent metadata
+├── data_wizard/           # Agent-specific directory
+│   ├── data_wizard.py     # Agent implementation
+│   └── config.yaml        # Agent configuration
+└── research_agent/        # Another agent
+    └── ...
+```
 
-## Cool Features
+### Agent Components
+1. **Code**: Python implementation
+2. **Configuration**: YAML settings
+3. **Tools**: Assigned capabilities
+4. **State**: Persistent memory
 
-- **Full System Access**: The AI can create files, run programs, etc.
-- **Memory**: It remembers agents between sessions
-- **Web Access**: It can search the web for information
-- **Self-Improvement**: The more you use it, the better it gets at creating helpful agents
+### Command Line Options
+```bash
+interpreter-evolve [options]
+  -w, --workspace DIR    Set agent workspace
+  -m, --model TYPE      Select AI model
+  -v, --verbose        Enable detailed output
+  -i, --interactive    Start interactive mode
+```
 
-## Example Conversation
+## 🔐 Security & Permissions
 
-**You**: I need help managing my grocery shopping.
+The evolving agent system has full system access. Use responsibly:
+- Only run in trusted environments
+- Review agent code before deployment
+- Monitor agent activities
+- Use workspace isolation
 
-**EVOLVE**: I can help with that! Would you like me to create a specialized grocery assistant agent?
+## 🤝 Integration Examples
 
-**You**: Yes, please.
+### With Python Scripts
+```python
+from interpreter_smol.agents import EvolvingAgentSystem
 
-**EVOLVE**: *Creates a grocery agent that can track shopping lists, suggest recipes, etc.*
+system = EvolvingAgentSystem(
+    model_type="gemini",
+    workspace_dir="./agents"
+)
 
-**You**: Add milk, eggs, and bread to my shopping list.
+# Create an agent
+system.run("""
+Create an agent named 'file_manager' that can:
+1. Organize files by type
+2. Remove duplicates
+3. Generate reports
+""")
 
-**EVOLVE**: *Uses the grocery agent to update your shopping list*
+# Use the agent
+system.run("file_manager, organize ./downloads")
+```
 
-## Important Notes
+### With Other Tools
+```python
+# Create an agent with specific tools
+system.run("""
+Create an agent with:
+- Web search capability
+- Python execution
+- File operations
+- Image processing
+Name it 'media_assistant'
+""")
+```
 
-- The AI has access to your computer, so only use it in a trusted environment
-- All agents are stored in the "agent_workspace" folder
-- If something doesn't work, try asking the AI to fix it - that's what it's designed to do!
+## 📊 Best Practices
 
-## Quick Commands
+1. **Agent Design**
+   - Clear, focused purpose
+   - Appropriate tool selection
+   - Error handling
+   - Documentation
 
-- Start interactive mode: `python evolve.py`
-- Run a single command: `python evolve.py "your command here"`
-- See all options: `python evolve.py --help`
+2. **Workspace Management**
+   - Regular cleanup
+   - Version control
+   - Backup strategy
 
-That's it! Just start it up and talk to it like you would any AI assistant.
+3. **Security**
+   - Review agent code
+   - Monitor activities
+   - Restrict permissions
+
+4. **Performance**
+   - Task-appropriate tools
+   - Resource monitoring
+   - Code optimization
+
+## 🔄 Evolution Process
+
+1. **Creation**: Define agent purpose and capabilities
+2. **Testing**: Verify functionality
+3. **Deployment**: Add to workspace
+4. **Monitoring**: Track performance
+5. **Improvement**: Update based on feedback
+6. **Collaboration**: Share with other agents
+
+## 🎯 Tips & Tricks
+
+1. **Agent Creation**
+   - Be specific about capabilities
+   - Include error handling
+   - Add documentation
+
+2. **Efficient Usage**
+   - Use appropriate models
+   - Leverage existing agents
+   - Combine capabilities
+
+3. **Troubleshooting**
+   - Check logs
+   - Review agent code
+   - Test in isolation
+
+## 🤝 Contributing
+
+Want to help improve EVOLVE?
+1. Fork the repository
+2. Create your feature branch
+3. Add your changes
+4. Submit a pull request
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+---
+
+Remember: EVOLVE is constantly learning and improving. The more you use it, the better it gets at creating and managing agents for your specific needs!

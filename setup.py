@@ -46,8 +46,8 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'interpreter-smol=interpreter_smol.cli:main',
-            'evolve=interpreter_smol.evolve:main',  # Add evolve command
+            'interpreter-smol=interpreter_smol.core.interpreter:main',  # Direct launch of interpreter
+            'interpreter-evolve=interpreter_smol.agents.evolving_agent:main',  # Launch evolving agent
         ],
     },
     python_requires=">=3.8",
