@@ -7,6 +7,8 @@ import sys
 import argparse
 import importlib.util
 from typing import Optional, List, Dict, Any, Union
+from pathlib import Path
+import yaml
 
 # Main SmolaGents imports
 from smolagents import CodeAgent
@@ -98,12 +100,26 @@ class Interpreter:
                 available_tools = list(TOOL_MAPPING.keys()) + ["unrestricted_python", "enhanced_python"]
                 print(f"Warning: Unknown tool '{tool_name}'. Available tools: {', '.join(available_tools)}")
 
-        # Create agent with all features enabled and default system prompt
+        # Load custom prompt templates from code_agent.yaml
+        prompt_path = Path(__file__).parent.parent / "prompts" / "code_agent.yaml"
+        if prompt_path.exists():
+            try:
+                with open(prompt_path, 'r') as f:
+                    prompt_templates = yaml.safe_load(f)
+            except Exception as e:
+                print(f"Warning: Could not load custom prompt templates: {e}")
+                prompt_templates = None
+        else:
+            prompt_templates = None
+            print("Warning: No code_agent.yaml found in prompts directory")
+
+        # Create agent with custom or default prompt
         agent = CodeAgent(
             tools=tools,
             model=self.model,
             additional_authorized_imports=all_imports,
             verbosity_level=2 if self.verbose else 1,
+            prompt_templates=prompt_templates  # Use our custom prompts if available
         )
         return agent
     

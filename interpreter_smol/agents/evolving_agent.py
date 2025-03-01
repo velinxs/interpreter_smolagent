@@ -90,7 +90,7 @@ class EvolvingAgentSystem:
     
     def _load_custom_system_prompt(self):
         """Load the custom system prompt for the evolving agent system."""
-        prompt_path = Path(__file__).parent / "prompts" / "evolving_agent.yaml"
+        prompt_path = Path(__file__).parent.parent / "prompts" / "evolving_agent.yaml"
         if prompt_path.exists():
             try:
                 with open(prompt_path, 'r') as f:
