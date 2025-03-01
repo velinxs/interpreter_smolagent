@@ -6,7 +6,7 @@ import subprocess
 import importlib
 from typing import Any, Dict, List, Optional, Union
 from smolagents.default_tools import PythonInterpreterTool
-from interpreter_smol.local_python_executor_unrestricted import evaluate_python_code, BASE_PYTHON_TOOLS
+from .local_python_executor_unrestricted import evaluate_python_code, BASE_PYTHON_TOOLS
 
 class EnhancedPythonInterpreter(PythonInterpreterTool):
     """A Python interpreter with guaranteed full system access and persistence."""

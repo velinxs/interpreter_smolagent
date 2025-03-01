@@ -12,7 +12,7 @@ import re
 from collections.abc import Mapping
 from importlib import import_module
 from types import ModuleType
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import numpy as np
 import pandas as pd

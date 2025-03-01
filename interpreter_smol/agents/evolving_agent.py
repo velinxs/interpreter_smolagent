@@ -31,7 +31,7 @@ class EvolvingAgentSystem:
         workspace_dir: str = "./agent_workspace"
     ):
         """Initialize the evolving agent system."""
-        from interpreter_smol.cli import Interpreter
+        from interpreter_smol.core.interpreter import Interpreter
         
         # Create the workspace directory if it doesn't exist
         if not os.path.exists(workspace_dir):
@@ -234,7 +234,11 @@ class EvolvingAgentSystem:
                 delete_agent,
             ])
         else:
-            print("Warning: Could not add agent management tools.  Interpreter structure is unexpected.")
+            print("Warning: Could not add agent management tools. Interpreter structure is unexpected.")
+            
+    def run(self, prompt: str) -> str:
+        """Run a prompt through the interpreter."""
+        return self.interpreter.run(prompt)
 
 def main():
     """Command line interface for the evolving agent system."""

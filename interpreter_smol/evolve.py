@@ -5,7 +5,7 @@ Launcher script for the Evolving Agent System.
 
 import os
 import sys
-from evolving_agent import EvolvingAgentSystem, main
+from .agents.evolving_agent import EvolvingAgentSystem, main
 
 if __name__ == "__main__":
     # If no arguments are provided, start in interactive mode
