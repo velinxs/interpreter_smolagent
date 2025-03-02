@@ -54,11 +54,14 @@ class EvolvingAgentSystem:
             verbose=verbose
         )
         
-        # Set custom system prompt if available
+        # Set custom prompt templates if available
         if custom_system_prompt and hasattr(self.interpreter.agent, 'system_prompt'):
-            self.interpreter.agent.system_prompt = custom_system_prompt
+            # Update all prompt templates
+            self.interpreter.agent.system_prompt = custom_system_prompt.get("system_prompt", "")
+            if hasattr(self.interpreter.agent, 'prompt_templates'):
+                self.interpreter.agent.prompt_templates = custom_system_prompt
             if verbose:
-                print("Using custom system prompt for evolving agent system.")
+                print("Using custom prompt templates for evolving agent system.")
         
         # Initialize the agent registry
         self.agent_registry = {}
@@ -89,15 +92,25 @@ class EvolvingAgentSystem:
             print(f"Error saving agent registry: {e}")
     
     def _load_custom_system_prompt(self):
-        """Load the custom system prompt for the evolving agent system."""
+        """Load the custom prompts for the evolving agent system."""
         prompt_path = Path(__file__).parent.parent / "prompts" / "evolving_agent.yaml"
         if prompt_path.exists():
             try:
                 with open(prompt_path, 'r') as f:
-                    prompt_data = yaml.safe_load(f)
-                    return prompt_data.get("system_prompt", "")
+                    # Load entire YAML file as prompt templates
+                    prompt_templates = yaml.safe_load(f)
+                    
+                    # Convert the loaded data into prompt templates dict
+                    # This matches the structure expected by SmolaGents
+                    templates = {
+                        "system_prompt": prompt_templates.get("system_prompt", ""),
+                        "planning": prompt_templates.get("planning", {}),
+                        "managed_agent": prompt_templates.get("managed_agent", {}),
+                        "final_answer": prompt_templates.get("final_answer", {})
+                    }
+                    return templates
             except Exception as e:
-                print(f"Error loading custom system prompt: {e}")
+                print(f"Error loading custom prompts: {e}")
         return None
     
     def _add_agent_management_tools(self):

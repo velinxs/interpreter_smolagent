@@ -121,5 +121,16 @@ class EnhancedPythonInterpreter(Tool):
         # The captured prints are in buffer
         captured_text = buffer.getvalue()
 
-        # Return a combined message with prints and final expression result
-        return f"Stdout:\n{captured_text}Output: {str(result)}"
+        # Construct output string
+        output_parts = []
+        
+        # Add captured stdout if any
+        if captured_text.strip():
+            output_parts.append(captured_text.rstrip())  # Remove trailing whitespace
+            
+        # Add evaluation result if it's not None
+        if result is not None:
+            output_parts.append(str(result))
+            
+        # Join with newlines if multiple parts
+        return "\n".join(output_parts) if output_parts else "None"
