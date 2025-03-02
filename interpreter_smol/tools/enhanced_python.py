@@ -102,13 +102,19 @@ class EnhancedPythonInterpreter(Tool):
         state["_print_outputs"] = ""
 
         try:
-            # Evaluate user code with no restrictions on imports
-            result = evaluate_python_code(
-                code,
-                state=state,
-                static_tools=self.base_python_tools,
-                authorized_imports="*"
-            )[0]
+            # Execute code directly with all tools available
+            # Use exec_globals to make sure all tools are accessible
+            exec_globals = {**BASE_PYTHON_TOOLS, **self.base_python_tools, **state}
+            try:
+                # Try to evaluate as expression first
+                result = eval(code, exec_globals)
+            except SyntaxError:
+                # If not an expression, execute as statements
+                exec(code, exec_globals)
+                # Update state with any new variables
+                state.update({k: v for k, v in exec_globals.items() 
+                            if k not in BASE_PYTHON_TOOLS and k not in self.base_python_tools})
+                result = None
         except Exception as e:
             # If there's an error, revert print and return immediately
             builtins.print = original_print
@@ -129,8 +135,8 @@ class EnhancedPythonInterpreter(Tool):
             output_parts.append(captured_text.rstrip())  # Remove trailing whitespace
             
         # Add evaluation result if it's not None
-        if result is not None:
+        if result is not None and str(result) != "None":
             output_parts.append(str(result))
             
-        # Join with newlines if multiple parts
-        return "\n".join(output_parts) if output_parts else "None"
+        # Return captured output even if empty (don't convert empty to "None")
+        return "\n".join(output_parts)

@@ -26,3 +26,9 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+# Test files
+test_tools.py
+test_*.py
+time_script.py
+hello_script.sh
