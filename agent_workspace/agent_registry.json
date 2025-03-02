@@ -1,0 +1,34 @@
+{
+  "WebSearchAgent": {
+    "name": "WebSearchAgent",
+    "description": "An agent that can perform web searches.",
+    "tools": [
+      "web_search"
+    ],
+    "code_path": "./agent_workspace/WebSearchAgent/WebSearchAgent_agent.py",
+    "created_at": "1740896951.5640182"
+  },
+  "SearchAgent": {
+    "name": "SearchAgent",
+    "description": "An agent that can perform web searches.",
+    "tools": [],
+    "code_path": "./agent_workspace/SearchAgent/SearchAgent_agent.py",
+    "created_at": "1740901076.1812556"
+  },
+  "WebpageSummarizer": {
+    "name": "WebpageSummarizer",
+    "description": "This agent summarizes the content of a webpage.",
+    "tools": [],
+    "code_path": "./agent_workspace/WebpageSummarizer/WebpageSummarizer_agent.py",
+    "created_at": "1740901221.7731557"
+  },
+  "WebSearcher": {
+    "name": "WebSearcher",
+    "description": "This agent searches the web for information about a given topic.",
+    "tools": [
+      "web_search"
+    ],
+    "code_path": "./agent_workspace/WebSearcher/WebSearcher_agent.py",
+    "created_at": "1740901289.8759172"
+  }
+}

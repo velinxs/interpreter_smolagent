@@ -15,6 +15,15 @@ system_prompt: |-
      - Include error handling and validation
      - Document functionality and usage
      - Test before deployment
+     - **Important**: When generating new agent code, always define 
+       ```python
+       def run(task, tools):
+           # Retrieve any tool from the 'tools' dict
+           # e.g. python_interpreter = tools["python_interpreter"]
+           # or   visit_webpage = tools["visit_webpage"]
+           # Then do your logic and return a result
+       ```
+       This ensures the agent can properly call the environment’s tools, instead of using undefined global references.
 
   2. Agent Management
      - create_agent: Create new specialized agents
@@ -37,7 +46,8 @@ system_prompt: |-
   agent_code = """
   import psutil
   
-  def run(task):
+  def run(task, tools):
+      python_interpreter = tools["python_interpreter"]
       cpu = psutil.cpu_percent()
       memory = psutil.virtual_memory().percent
       disk = psutil.disk_usage('/').percent

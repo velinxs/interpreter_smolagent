@@ -1,11 +1,15 @@
 Metadata-Version: 2.2
 Name: interpreter-smol
-Version: 0.1.0
-Summary: A simplified Open-Interpreter alternative built on SmolaGents
+Version: 0.2.0
+Summary: A powerful interpreter with evolving agents built on SmolaGents
+Home-page: https://github.com/velinxs/interpreter_smolagent
 Author: velinxs
 Author-email: velinxs1@gmail.com
-Classifier: Development Status :: 3 - Alpha
+Keywords: ai interpreter agents llm automation code-execution evolving-agents
+Classifier: Development Status :: 4 - Beta
 Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: Intended Audience :: System Administrators
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.8
@@ -13,19 +17,303 @@ Classifier: Programming Language :: Python :: 3.9
 Classifier: Programming Language :: Python :: 3.10
 Classifier: Programming Language :: Python :: 3.11
 Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: System :: Systems Administration
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
 Requires-Dist: smolagents>=1.0.0
+Requires-Dist: pyyaml>=6.0.0
+Requires-Dist: litellm>=1.0.0
+Requires-Dist: requests>=2.25.0
 Provides-Extra: gemini
 Requires-Dist: google-genai>=1.0.0; extra == "gemini"
+Provides-Extra: openai
+Requires-Dist: openai>=1.0.0; extra == "openai"
+Provides-Extra: anthropic
+Requires-Dist: anthropic>=0.5.0; extra == "anthropic"
 Provides-Extra: complete
 Requires-Dist: google-genai>=1.0.0; extra == "complete"
-Requires-Dist: litellm>=1.0.0; extra == "complete"
+Requires-Dist: openai>=1.0.0; extra == "complete"
+Requires-Dist: anthropic>=0.5.0; extra == "complete"
 Requires-Dist: pillow>=9.0.0; extra == "complete"
 Requires-Dist: numpy>=1.20.0; extra == "complete"
 Requires-Dist: pandas>=1.3.0; extra == "complete"
 Requires-Dist: matplotlib>=3.4.0; extra == "complete"
+Requires-Dist: psutil>=5.8.0; extra == "complete"
+Requires-Dist: beautifulsoup4>=4.9.0; extra == "complete"
 Dynamic: author
 Dynamic: author-email
 Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: keywords
 Dynamic: provides-extra
 Dynamic: requires-dist
+Dynamic: requires-python
 Dynamic: summary
+
+# 🤖 interpreter-smol
+
+A lightweight, powerful interpreter built on top of [smolagents](https://github.com/huggingface/smolagents). Think of it as a smarter, more flexible version of the original Open Interpreter!
+
+## 🎯 Quick Commands
+
+```bash
+# Launch the standard interpreter
+interpreter-smol
+
+# Launch with specific model
+interpreter-smol --model openai --api-key your-key
+
+# Launch the evolving agent system
+interpreter-evolve
+
+# Launch evolving agent with workspace
+interpreter-evolve -w ./my_agents --model gemini
+```
+
+## ✨ Key Features
+
+- 🌟 **Enhanced Python Execution**: Full system access with safety when you need it
+- 🤝 **Multiple Model Support**: Works with Gemini, OpenAI, Anthropic, and Hugging Face models
+- 🧬 **Evolving Agent System**: Create and manage AI agents that can learn and adapt
+- 🔧 **Extensible Tools**: Easy to add new capabilities through the tools system
+
+## 📦 Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/interpreter-smol.git
+cd interpreter-smol
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+## 🚀 Quick Start
+
+### Basic Usage
+
+```python
+from interpreter_smol import Interpreter
+
+# Initialize with Gemini (default)
+interpreter = Interpreter()
+
+# Or choose your preferred model
+interpreter = Interpreter(
+    model="openai",
+    model_id="gpt-4",  # optional - will use best model by default
+    api_key="your-api-key"  # or set via environment variable
+)
+
+# Run a single command
+interpreter.run("Calculate the first 10 prime numbers")
+
+# Start interactive chat
+interpreter.chat()
+```
+
+### Command Line Interface
+
+```bash
+# Interactive mode with Gemini
+interpreter-smol -i
+
+# Use a specific model
+interpreter-smol -i --model openai --api-key your-api-key
+
+# Run a single command
+interpreter-smol "Create a simple web server in Python"
+```
+
+## 🔑 API Keys Setup
+
+Set up your API keys as environment variables:
+
+```bash
+# For Gemini (default)
+export GOOGLE_API_KEY=your_api_key_here
+
+# For OpenAI
+export OPENAI_API_KEY=your_api_key_here
+
+# For Anthropic
+export ANTHROPIC_API_KEY=your_api_key_here
+
+# For Hugging Face
+export HF_API_TOKEN=your_api_key_here
+```
+
+## 🛠️ Core Components
+
+### Enhanced Python Interpreter
+
+Our EnhancedPythonInterpreter provides unrestricted system access with helpful utilities:
+
+```python
+from interpreter_smol import Interpreter
+
+interpreter = Interpreter(tools=["enhanced_python"])
+
+# Full system access
+interpreter.run("""
+import os
+print("Current directory:", os.getcwd())
+
+# Use helper functions
+result = run_shell("ls -la")
+print(result)
+
+# Easy file operations
+write_file("test.txt", "Hello World!")
+content = read_file("test.txt")
+""")
+```
+
+### Evolving Agent System
+
+Launch and interact with evolving agents via CLI:
+
+```bash
+# Start the evolving agent system interactively
+interpreter-evolve -i
+
+# Or with specific settings
+interpreter-evolve -w ./my_agents --model openai --verbose
+```
+
+Or use programmatically:
+
+```python
+from interpreter_smol.agents import EvolvingAgentSystem
+
+# Initialize the system
+system = EvolvingAgentSystem(
+    model_type="gemini",
+    workspace_dir="./agent_workspace"
+)
+
+# Create a new agent
+system.interpreter.run("""
+Create an agent that can:
+1. Search the web
+2. Process CSV files
+3. Generate charts
+Name it 'data_analyst'
+""")
+
+# Use the agent
+system.interpreter.run("data_analyst, analyze sales.csv and create a trend chart")
+
+# List available agents
+system.interpreter.run("List all available agents")
+
+# Delete an agent
+system.interpreter.run("Delete the 'data_analyst' agent")
+```
+
+The evolving agent system provides:
+- 🤖 Agent Creation & Management
+- 📁 Persistent Agent Storage
+- 🔧 Tool Distribution
+- 🧠 Custom System Prompts
+- 🔄 Dynamic Loading/Unloading
+
+See [EVOLVE.md](EVOLVE.md) for more details on the Evolving Agent System.
+
+## 📁 Project Structure
+
+```
+interpreter_smol/
+├── agents/               # Agent implementations
+│   ├── evolving_agent.py # Self-evolving agent system
+│   └── vision_browser.py # Vision-capable web browser
+├── core/                # Core functionality
+│   ├── interpreter.py   # Main interpreter class
+│   └── models/         # Model integrations
+├── tools/               # Tool implementations
+│   ├── enhanced_python.py # Enhanced Python interpreter
+│   └── local_python_executor_unrestricted.py # Unrestricted executor
+├── prompts/             # System prompts
+│   ├── code_agent.yaml  # CodeAgent prompt template
+│   └── evolving_agent.yaml # Evolving agent prompt
+└── examples/            # Usage examples
+```
+
+## 🎮 Available Tools
+
+- **enhanced_python**: Full system access Python interpreter
+- **web_search**: DuckDuckGo web search capability
+- **visit_webpage**: Web page content extraction
+- More tools can be added through the smolagents integration!
+
+## 🎯 Examples
+
+### Different Models
+
+```python
+# Gemini
+interpreter = Interpreter(model="gemini")
+
+# OpenAI (GPT-4)
+interpreter = Interpreter(
+    model="openai",
+    model_id="gpt-4"
+)
+
+# Anthropic (Claude)
+interpreter = Interpreter(
+    model="anthropic",
+    model_id="claude-3-sonnet"
+)
+
+# Hugging Face (e.g., Mixtral)
+interpreter = Interpreter(
+    model="hf",
+    model_id="mistralai/Mixtral-8x7B-Instruct-v0.1"
+)
+```
+
+### Custom Tools
+
+```python
+from smolagents import tool
+
+@tool
+def custom_tool(param1: str, param2: int) -> str:
+    """Your tool description here."""
+    # Tool implementation
+    return f"Processed {param1} {param2} times"
+
+# Add to interpreter
+interpreter = Interpreter(tools=["enhanced_python", custom_tool])
+```
+
+## 🔧 Troubleshooting
+
+1. **API Key Issues**
+   - Check that your API keys are set correctly
+   - Try running with `verbose=True` for more details
+
+2. **Import Errors**
+   - Make sure all dependencies are installed: `pip install -r requirements.txt`
+   - For Gemini: `pip install google-genai`
+
+3. **Permission Issues**
+   - enhanced_python requires appropriate system permissions
+   - Try running with restricted tools if needed
+
+## 🤝 Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## 📄 License
+
+[MIT License](LICENSE)
+
+---
+
+**Note**: This project is built on top of smolagents and aims to provide a simpler, more flexible alternative to Open Interpreter. While we provide full system access through the enhanced_python tool, please use it responsibly!

@@ -10,8 +10,9 @@ from typing import Optional, List, Dict, Any, Union
 from pathlib import Path
 import yaml
 
-# Main SmolaGents imports
-from smolagents import CodeAgent
+# Import our modified CodeAgent from local smolagents
+from smolagents.agents import CodeAgent  # Local unrestricted version
+# Keep other tools from installed package
 from smolagents.default_tools import TOOL_MAPPING
 from interpreter_smol.tools import EnhancedPythonInterpreter
 

@@ -102,9 +102,11 @@ class EvolvingAgentSystem:
     
     def _add_agent_management_tools(self):
         """Add tools for agent management to the interpreter."""
+        
         @tool
         def create_agent(name: str, description: str, tools: List[str], code: str) -> str:
-            """Create a new agent with specified configuration and save it to the workspace.
+            """
+            Create a new agent with specified configuration and save it to the workspace.
 
             Args:
                 name: The name of the agent.
@@ -114,6 +116,14 @@ class EvolvingAgentSystem:
 
             Returns:
                 str: Success message or error.
+
+            NOTE: Typically, your code should define something like:
+
+                def run(task, tools):
+                    py_tool = tools["python_interpreter"]
+                    return py_tool(code=f"print('Agent running task: {task}')")
+
+            so the agent can reference python_interpreter from the provided `tools` dict.
             """
             try:
                 # Create agent directory
@@ -144,19 +154,15 @@ class EvolvingAgentSystem:
 
         @tool
         def list_agents() -> str:
-            """list agents.
-
-            Args:
-                name: The name of the agent to run.
-                
-            Returns:
-                str: The result from the agent.
+            """
+            list agents in the registry.
             """
             return json.dumps(self.agent_registry, indent=2)
 
         @tool
         def run_agent(name: str, task: str) -> str:
-            """Run a specific agent on a given task.
+            """
+            Run a specific agent on a given task.
 
             Args:
                 name: The name of the agent to run.
@@ -179,9 +185,17 @@ class EvolvingAgentSystem:
                 module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module)
 
+                # Prepare the python_interpreter tool
+                # This is where we actually create an interpreter instance to pass to the agent.
+                python_tool = EnhancedPythonInterpreter()
+
                 # Run the agent
                 if hasattr(module, "run"):
-                    result = module.run(task)
+                    # The agent code can define run(task, tools)
+                    # We'll pass the python_interpreter in a dict
+                    # If the agent code only has run(task) (one param),
+                    # it will fail. So we recommend the agent code is run(task, tools).
+                    result = module.run(task, {"python_interpreter": python_tool})
                     return f"Agent '{name}' result: {result}"
                 else:
                     return f"Error: Agent '{name}' does not have a 'run' function."
@@ -190,7 +204,8 @@ class EvolvingAgentSystem:
 
         @tool
         def delete_agent(name: str) -> str:
-            """Delete an agent from the registry.
+            """
+            Delete an agent from the registry.
 
             Args:
                 name: The name of the agent to delete.
@@ -215,26 +230,31 @@ class EvolvingAgentSystem:
                 return f"Agent '{name}' deleted successfully."
             except Exception as e:
                 return f"Error deleting agent '{name}': {str(e)}"
-
-
-        # --- CHANGE 2: Conditional logic AFTER tool definitions ---
-        if isinstance(self.interpreter.agent, dict) and 'tools' in self.interpreter.agent:
-            # --- CHANGE 3: Use .update() for dictionaries ---
-            self.interpreter.agent['tools'].update({
-                create_agent.name: create_agent,  # Use .name for keys
-                list_agents.name: list_agents,
-                run_agent.name: run_agent,
-                delete_agent.name: delete_agent
-            })
-        elif isinstance(self.interpreter.agent.tools, list):
-            self.interpreter.agent.tools.extend([
-                create_agent,
-                list_agents,
-                run_agent,
-                delete_agent,
-            ])
-        else:
-            print("Warning: Could not add agent management tools. Interpreter structure is unexpected.")
+                
+        # Add tools to the agent
+        tools = [
+            create_agent,
+            list_agents,
+            run_agent,
+            delete_agent,
+        ]
+        
+        try:
+            if hasattr(self.interpreter.agent, 'tools'):
+                if isinstance(self.interpreter.agent.tools, list):
+                    self.interpreter.agent.tools.extend(tools)
+                elif isinstance(self.interpreter.agent.tools, dict):
+                    self.interpreter.agent.tools.update({
+                        tool.name: tool for tool in tools
+                    })
+                else:
+                    self.interpreter.agent.tools = tools
+                if self.verbose:
+                    print(f"Added {len(tools)} agent management tools.")
+            else:
+                print("Warning: Agent does not have tools attribute.")
+        except Exception as e:
+            print(f"Warning: Could not add agent management tools: {e}")
             
     def run(self, prompt: str) -> str:
         """Run a prompt through the interpreter."""
