@@ -30,5 +30,28 @@
     ],
     "code_path": "./agent_workspace/WebSearcher/WebSearcher_agent.py",
     "created_at": "1740901289.8759172"
+  },
+  "hello_agent": {
+    "name": "hello_agent",
+    "description": "Responds to 'hello' with a greeting.",
+    "tools": [],
+    "code_path": "./agent_workspace/hello_agent/hello_agent_agent.py",
+    "created_at": "1740946511.8669703"
+  },
+  "blog_summarizer": {
+    "name": "blog_summarizer",
+    "description": "Reads Alice's blog archive and summarizes the most recent post.",
+    "tools": [
+      "enhanced_python"
+    ],
+    "code_path": "./agent_workspace/blog_summarizer/blog_summarizer_agent.py",
+    "created_at": "1740946730.60017"
+  },
+  "greeting_agent": {
+    "name": "greeting_agent",
+    "description": "Responds with greetings in multiple languages",
+    "tools": [],
+    "code_path": "./agent_workspace/greeting_agent/greeting_agent_agent.py",
+    "created_at": "1741087371.1537051"
   }
 }
