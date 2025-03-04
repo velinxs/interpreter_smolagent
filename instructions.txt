@@ -1,0 +1,17 @@
+python3 -m venv venv
+pip install -e .
+#install locally interpreter-smol where setup.py is located
+
+cd interpreter-smol/smolagents/ && pip install -e . 
+
+#inside smolagents run above command.
+
+interpreter-smol
+
+or
+
+interpreter-evolve 
+
+#evolving agent or OI powered by smolagents.
+
+
