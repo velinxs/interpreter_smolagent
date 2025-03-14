@@ -23,7 +23,7 @@ from PIL import Image
 from bs4 import BeautifulSoup
 from typing import Any, Dict, List, Optional, Tuple
 from smolagents.tools import Tool
-from local_python_executor_unrestricted import evaluate_python_code, BASE_PYTHON_TOOLS
+from .local_python_executor_unrestricted import evaluate_python_code, BASE_PYTHON_TOOLS
 
 class EnhancedPythonInterpreter(Tool):
     """A Python interpreter with full system access and persistence."""
