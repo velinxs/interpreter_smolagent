@@ -55,6 +55,7 @@ BASE_PYTHON_TOOLS = {
     "filter": filter,
     "next": next,
     "iter": iter,
+    "open": open,  # Add built-in open function
 }
 
 def evaluate_python_code(
@@ -66,7 +67,7 @@ def evaluate_python_code(
 ) -> Tuple[Any, Dict[str, Any]]:
     """
     Evaluate Python code with direct execution.
-    Handles both expressions and statements safely.
+    Handles both expressions and statements with full access.
     """
     if state is None:
         state = {}
@@ -75,20 +76,34 @@ def evaluate_python_code(
     if custom_tools is None:
         custom_tools = {}
 
-    # Merge tools into state
-    exec_globals = {**BASE_PYTHON_TOOLS, **static_tools, **custom_tools, **state}
+    # Create globals with everything including builtins
+    exec_globals = {
+        **globals(),  # Get all global variables
+        **vars(builtins),  # Get ALL builtins including open()
+        **BASE_PYTHON_TOOLS,  # Our base tools
+        **static_tools,  # Any static tools passed in
+        **custom_tools,  # Any custom tools passed in 
+        **state,  # Current state
+        'open': builtins.open,  # Explicitly ensure open() is available
+    }
     
     try:
-        # Try to evaluate as expression first
-        tree = ast.parse(code, mode='eval')
-        result = eval(code, exec_globals)
+        # Try direct exec first - most permissive
+        exec(code, exec_globals)
+        # Get any new variables added to state
+        state.update({k: v for k, v in exec_globals.items() 
+                     if k not in globals() and 
+                     k not in vars(builtins) and
+                     k not in BASE_PYTHON_TOOLS})
+        # Try to get a result if one was assigned
+        result = exec_globals.get('_result', None)
         return result, state
-    except SyntaxError:
+        
+    except Exception as exec_error:
         try:
-            # If not an expression, execute as statements
-            exec(code, exec_globals)
-            # Return None for statements and update state
-            state.update({k: v for k, v in exec_globals.items() if k not in BASE_PYTHON_TOOLS})
-            return None, state
-        except Exception as e:
-            raise InterpreterError(f"Error executing code: {str(e)}")
+            # If exec failed, try eval as fallback
+            result = eval(code, exec_globals)
+            return result, state
+        except Exception as eval_error:
+            # If both fail, raise original exec error
+            raise InterpreterError(f"Error executing code: {str(exec_error)}")

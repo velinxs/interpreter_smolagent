@@ -6,9 +6,24 @@ import subprocess
 import importlib
 import builtins
 import io
-from typing import Any, Dict, List, Optional
+import requests
+import json
+import datetime
+import re
+import urllib
+import html
+import time
+import random
+import tempfile
+import shutil
+import glob
+import zipfile
+import bs4
+from PIL import Image
+from bs4 import BeautifulSoup
+from typing import Any, Dict, List, Optional, Tuple
 from smolagents.tools import Tool
-from .local_python_executor_unrestricted import evaluate_python_code, BASE_PYTHON_TOOLS
+from local_python_executor_unrestricted import evaluate_python_code, BASE_PYTHON_TOOLS
 
 class EnhancedPythonInterpreter(Tool):
     """A Python interpreter with full system access and persistence."""
@@ -55,6 +70,22 @@ class EnhancedPythonInterpreter(Tool):
             "eval": eval,
             "importlib": importlib,
             "__import__": __import__,
+            "requests": requests,
+            "json": json,
+            "datetime": datetime,
+            "re": re,
+            "urllib": urllib,
+            "html": html,
+            "time": time,
+            "random": random,
+            "tempfile": tempfile,
+            "BeautifulSoup": BeautifulSoup,
+            "shutil": shutil,
+            "glob": glob,
+            "zipfile": zipfile,
+            "bs4": bs4,
+            "Image": Image,
+            "PIL": Image,
         })
 
         # Helper to run shell commands
@@ -80,63 +111,54 @@ class EnhancedPythonInterpreter(Tool):
                 return f.read()
         self.base_python_tools["read_file"] = read_file
 
-    def forward(self, **kwargs) -> str:
-        """Execute Python code with full system access, capturing prints."""
-        # The user code is passed in with the key "code"
-        code = kwargs.get("code", "")
+    def forward(self, **kwargs) -> Tuple[Any, Dict[str, Any]]:
+            """Execute Python code with full system access, capturing prints."""
+            # The user code is passed in with the key "code"
+            code = kwargs.get("code", "")
 
-        # We'll capture any print statements to this buffer
-        buffer = io.StringIO()
-        original_print = builtins.print
+            # We'll capture any print statements to this buffer
+            buffer = io.StringIO()
+            original_print = builtins.print
 
-        def custom_print(*args, **print_kwargs):
-            # This calls real 'print' so you still see output in logs
-            original_print(*args, **print_kwargs)
-            # Also record it in the buffer
-            print(*args, **print_kwargs, file=buffer)
+            def custom_print(*args, **print_kwargs):
+                # This calls real 'print' so you still see output in logs
+                original_print(*args, **print_kwargs)
+                # Also record it in the buffer
+                print(*args, **print_kwargs, file=buffer)
 
-        # Temporarily override builtins.print
-        builtins.print = custom_print
+            # Temporarily override builtins.print
+            builtins.print = custom_print
 
-        state: Dict[str, Any] = {}
-        state["_print_outputs"] = ""
+            state: Dict[str, Any] = {}
+            state["_print_outputs"] = ""
 
-        try:
-            # Execute code directly with all tools available
-            # Use exec_globals to make sure all tools are accessible
-            exec_globals = {**BASE_PYTHON_TOOLS, **self.base_python_tools, **state}
             try:
-                # Try to evaluate as expression first
-                result = eval(code, exec_globals)
-            except SyntaxError:
-                # If not an expression, execute as statements
-                exec(code, exec_globals)
-                # Update state with any new variables
-                state.update({k: v for k, v in exec_globals.items() 
-                            if k not in BASE_PYTHON_TOOLS and k not in self.base_python_tools})
-                result = None
-        except Exception as e:
-            # If there's an error, revert print and return immediately
-            builtins.print = original_print
-            error_msg = f"Error executing code: {str(e)}"
-            return f"Stdout:\n{buffer.getvalue()}\nError: {error_msg}"
-        finally:
-            # Always restore the original print function
-            builtins.print = original_print
+                # Execute code directly without any restrictions
+                exec_globals = {**globals(), **self.base_python_tools, **state}
+                # Make sure open() is available and using the built-in function
+                exec_globals['open'] = builtins.open
+                
+                try:
+                    # Try to evaluate as expression first
+                    result = eval(code, exec_globals)
+                except SyntaxError:
+                    # If not an expression, execute as statements
+                    exec(code, exec_globals)
+                    # Update state with any new variables
+                    state.update({k: v for k, v in exec_globals.items() 
+                                if k not in globals() and k not in self.base_python_tools})
+                    result = None
+            except Exception as e:
+                # If there's an error, revert print and return error tuple
+                builtins.print = original_print
+                error_msg = f"Error executing code: {str(e)}"
+                return None, {"error": error_msg, "stdout": buffer.getvalue()}
+            finally:
+                # Always restore the original print function
+                builtins.print = original_print
 
-        # The captured prints are in buffer
-        captured_text = buffer.getvalue()
-
-        # Construct output string
-        output_parts = []
-        
-        # Add captured stdout if any
-        if captured_text.strip():
-            output_parts.append(captured_text.rstrip())  # Remove trailing whitespace
+            # The captured prints are in buffer
+            captured_text = buffer.getvalue()
             
-        # Add evaluation result if it's not None
-        if result is not None and str(result) != "None":
-            output_parts.append(str(result))
-            
-        # Return captured output even if empty (don't convert empty to "None")
-        return "\n".join(output_parts)
+            # Return result and state with stdout
+            return result, {"stdout": captured_text.strip(), "state": state}
