@@ -7,8 +7,8 @@ long_description = (this_directory / "interpreter_smol" / "README.md").read_text
 
 setup(
     name="interpreter-smol",
-    version="0.2.0",
-    description="A powerful interpreter with evolving agents built on SmolaGents",
+    version="0.3.0",
+    description="Unlimited AI agent with dynamic tool creation, self-awareness, and Claude deployment",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="velinxs",
@@ -48,6 +48,7 @@ setup(
         'console_scripts': [
             'interpreter-smol=interpreter_smol.core.interpreter:main',  # Direct launch of interpreter
             'interpreter-evolve=interpreter_smol.agents.evolving_agent:main',  # Launch evolving agent
+            'interpreter-unlimited=interpreter_smol.core.self_improving_cli:main',  # Self-improving agent
         ],
     },
     python_requires=">=3.8",
