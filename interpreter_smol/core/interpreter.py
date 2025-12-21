@@ -47,7 +47,7 @@ class Interpreter:
         if self.model_type.lower() == "gemini":
             from smolagents import LiteLLMModel
             return LiteLLMModel(
-                model_id=self.model_id or "gemini/gemini-2.0-flash",
+                model_id=self.model_id or "gemini/gemini-3-flash-preview",
                 api_key=self.api_key or os.environ.get("GOOGLE_API_KEY"),
                 temperature=self.temperature,
                 max_tokens=self.max_tokens,

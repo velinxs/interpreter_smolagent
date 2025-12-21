@@ -114,13 +114,15 @@ class SelfImprovingAgent:
     def _initialize_model(self, model: str, model_id: Optional[str], temperature: float, max_tokens: int):
         """Initialize the LLM model"""
         if model_id is None:
-            # Default model IDs
+            # Default model IDs (updated for Gemini 3 - Dec 2025)
             model_ids = {
-                "gemini": "gemini/gemini-2.0-flash-exp",
+                "gemini": "gemini/gemini-3-flash-preview",  # Latest Gemini 3 Flash
+                "gemini-flash": "gemini/gemini-3-flash-preview",  # Explicit Flash
+                "gemini-pro": "gemini/gemini-3-pro-preview",  # Gemini 3 Pro for complex tasks
                 "openai": "gpt-4",
                 "anthropic": "claude-sonnet-4-5-20250929"
             }
-            model_id = model_ids.get(model, "gemini/gemini-2.0-flash-exp")
+            model_id = model_ids.get(model, "gemini/gemini-3-flash-preview")
 
         return LiteLLMModel(
             model_id=model_id,
