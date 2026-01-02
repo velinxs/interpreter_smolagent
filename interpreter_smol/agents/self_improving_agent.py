@@ -13,8 +13,8 @@ from typing import List, Dict, Optional, Any, Type
 from pathlib import Path
 import json
 
-from ..smolagents.src.smolagents import CodeAgent, Tool
-from ..smolagents.src.smolagents.models import LiteLLMModel
+from smolagents import CodeAgent, Tool
+from smolagents.models import LiteLLMModel
 from ..tools.dynamic_tool_factory import (
     ToolFactory,
     LLMToolGenerator,
@@ -133,7 +133,7 @@ class SelfImprovingAgent:
     def _load_initial_tools(self, tool_names: List[str]):
         """Load initial tools"""
         from ..tools.enhanced_python import EnhancedPythonInterpreter
-        from ..smolagents.src.smolagents.default_tools import TOOL_MAPPING
+        from smolagents.default_tools import TOOL_MAPPING
 
         # Tool mapping with enhanced Python
         available_tools = {
@@ -192,7 +192,8 @@ class SelfImprovingAgent:
                 },
                 "tool_name": {
                     "type": "string",
-                    "description": "Optional tool name"
+                    "description": "Optional tool name",
+                    "nullable": True
                 }
             }
             output_type = "string"
@@ -274,8 +275,8 @@ class SelfImprovingAgent:
             description = "Read source code from the codebase"
             inputs = {
                 "file_path": {"type": "string", "description": "Path to file"},
-                "start_line": {"type": "integer", "description": "Optional start line"},
-                "end_line": {"type": "integer", "description": "Optional end line"}
+                "start_line": {"type": "integer", "description": "Optional start line", "nullable": True},
+                "end_line": {"type": "integer", "description": "Optional end line", "nullable": True}
             }
             output_type = "string"
 
@@ -292,7 +293,7 @@ class SelfImprovingAgent:
             description = "Search for code patterns in the codebase"
             inputs = {
                 "pattern": {"type": "string", "description": "Search pattern"},
-                "file_pattern": {"type": "string", "description": "Optional file pattern like '*.py'"}
+                "file_pattern": {"type": "string", "description": "Optional file pattern like '*.py'", "nullable": True}
             }
             output_type = "string"
 
