@@ -450,7 +450,27 @@ class SelfImprovingAgent:
 
     def _create_agent(self) -> CodeAgent:
         """Create the underlying CodeAgent"""
-        tools = [tool_class() for tool_class in self.tool_registry.get_all_tools().values()]
+        # Create tool instances, handling those that need special constructor args
+        tools = []
+        for tool_class in self.tool_registry.get_all_tools().values():
+            tool_name = getattr(tool_class, 'name', tool_class.__name__)
+
+            # Handle meta-tools that need constructor arguments
+            if tool_name == 'read_code':
+                tools.append(tool_class(self.codebase_nav))
+            elif tool_name == 'search_code':
+                tools.append(tool_class(self.codebase_nav))
+            elif tool_name == 'get_project_summary':
+                tools.append(tool_class(self.codebase_nav))
+            elif tool_name == 'deploy_claude_agent':
+                tools.append(tool_class(self.claude_manager))
+            elif tool_name == 'check_claude_task':
+                tools.append(tool_class(self.claude_manager))
+            elif tool_name == 'create_tool':
+                tools.append(tool_class(self))
+            else:
+                # Regular tools can be instantiated without args
+                tools.append(tool_class())
 
         # Load custom prompt
         prompt_path = Path(__file__).parent.parent / "prompts" / "self_aware_agent.yaml"
