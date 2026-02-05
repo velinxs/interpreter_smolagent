@@ -1,263 +1,266 @@
-# 🤖 interpreter-smol
+# interpreter-smol
 
-A lightweight, powerful interpreter built on top of [smolagents](https://github.com/huggingface/smolagents). Think of it as a smarter, more flexible version of the original Open Interpreter!
+**Open Interpreter, but smol.** A beautiful, powerful AI code interpreter built on [smolagents](https://github.com/huggingface/smolagents).
 
-## 🎯 Quick Commands
+```
+  ___       _                          _
+ |_ _|_ __ | |_ ___ _ __ _ __  _ __ ___| |_ ___ _ __
+  | || '_ \| __/ _ \ '__| '_ \| '__/ _ \ __/ _ \ '__|
+  | || | | | ||  __/ |  | |_) | | |  __/ ||  __/ |
+ |___|_| |_|\__\___|_|  | .__/|_|  \___|\__\___|_|
+                        |_|          smol edition
+```
+
+## Features
+
+- **Beautiful CLI** - Rich terminal UI with syntax highlighting, panels, and spinners
+- **Multi-Model Support** - Gemini, OpenAI, Anthropic, and HuggingFace
+- **Code Execution** - Full Python execution with system access
+- **Shell Integration** - Run shell commands with `!` prefix
+- **Conversation History** - Save and load conversations
+- **Safe Mode** - Optional confirmation before running code
+- **Evolving Agents** - Create and manage persistent AI agents
+
+## Quick Start
 
 ```bash
-# Launch the standard interpreter
+# Install
+pip install -e .
+
+# Run (interactive mode)
 interpreter-smol
 
-# Launch with specific model
-interpreter-smol --model openai --api-key your-key
+# Or use short aliases
+smol
+i
 
-# Launch the evolving agent system
-interpreter-evolve
+# Run with a prompt
+interpreter-smol "create a hello world script"
 
-# Launch evolving agent with workspace
-interpreter-evolve -w ./my_agents --model gemini
+# Use a different model
+interpreter-smol -m openai "explain this code"
+interpreter-smol -m anthropic "fix this bug"
 ```
 
-## ✨ Key Features
-
-- 🌟 **Enhanced Python Execution**: Full system access with safety when you need it
-- 🤝 **Multiple Model Support**: Works with Gemini, OpenAI, Anthropic, and Hugging Face models
-- 🧬 **Evolving Agent System**: Create and manage AI agents that can learn and adapt
-- 🔧 **Extensible Tools**: Easy to add new capabilities through the tools system
-
-## 📦 Installation
+## Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/interpreter-smol.git
-cd interpreter-smol
+# Clone and install
+git clone https://github.com/velinxs/interpreter_smolagent.git
+cd interpreter_smolagent
+pip install -e ".[complete]"
 
-# Install dependencies
-pip install -r requirements.txt
+# Or just the basics
+pip install -e .
 ```
 
-## 🚀 Quick Start
+Set up your API key:
 
-### Basic Usage
+```bash
+# Gemini (default)
+export GOOGLE_API_KEY=your_key
+
+# Or OpenAI
+export OPENAI_API_KEY=your_key
+
+# Or Anthropic
+export ANTHROPIC_API_KEY=your_key
+```
+
+## Usage
+
+### Interactive Mode
+
+```bash
+interpreter-smol
+```
+
+This launches the beautiful interactive CLI:
+
+```
+> Create a Python script that finds prime numbers
+
+[Code]
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n**0.5) + 1):
+        if n % i == 0:
+            return False
+    return True
+
+primes = [n for n in range(2, 100) if is_prime(n)]
+print(f"Prime numbers: {primes}")
+
+[Output]
+Prime numbers: [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
+```
+
+### Commands
+
+Inside the interpreter:
+
+| Command | Description |
+|---------|-------------|
+| `exit`, `quit`, `q` | Exit the interpreter |
+| `!<command>` | Run shell command (e.g., `!ls -la`) |
+| `?` | Show help |
+| `clear` | Clear screen |
+| `reset` | Reset conversation |
+| `history` | Show conversation history |
+| `save [file]` | Save conversation to file |
+| `config` | Show current configuration |
+| `"""` | Start multiline input |
+
+### CLI Options
+
+```bash
+interpreter-smol [OPTIONS] [PROMPT]
+
+Options:
+  -m, --model         Model provider: gemini, openai, anthropic, hf (default: gemini)
+  --model-id          Specific model ID (e.g., gpt-4o, claude-sonnet-4-20250514)
+  -k, --api-key       API key for the provider
+  -t, --temperature   Generation temperature (default: 0.7)
+  --max-tokens        Max tokens in response (default: 8192)
+  -v, --verbose       Enable verbose output
+  --safe              Safe mode: confirm before running code
+  -i, --interactive   Force interactive mode
+  --tools             Tools to enable (default: enhanced_python, web_search)
+  --version           Show version
+```
+
+### Examples
+
+```bash
+# Basic usage
+interpreter-smol "what files are in the current directory?"
+
+# Use OpenAI
+interpreter-smol -m openai "explain how async works in Python"
+
+# Verbose mode
+interpreter-smol -v "debug this error"
+
+# Safe mode (confirms before running code)
+interpreter-smol --safe "delete all .tmp files"
+
+# Different model
+interpreter-smol --model-id gpt-4o "refactor this function"
+
+# Interactive with initial prompt
+interpreter-smol -i "let's build a web scraper"
+```
+
+## Python API
 
 ```python
 from interpreter_smol import Interpreter
 
-# Initialize with Gemini (default)
-interpreter = Interpreter()
-
-# Or choose your preferred model
+# Initialize
 interpreter = Interpreter(
-    model="openai",
-    model_id="gpt-4",  # optional - will use best model by default
-    api_key="your-api-key"  # or set via environment variable
+    model="gemini",           # or "openai", "anthropic", "hf"
+    temperature=0.7,
+    verbose=False,
+    safe_mode=False
 )
 
-# Run a single command
-interpreter.run("Calculate the first 10 prime numbers")
+# Run a single prompt
+result = interpreter.run("Calculate fibonacci sequence")
 
 # Start interactive chat
 interpreter.chat()
+
+# Run with initial prompt and continue chatting
+interpreter.chat("Let's build a web scraper")
 ```
 
-### Command Line Interface
+## Evolving Agent System
+
+Create persistent AI agents that can be reused:
 
 ```bash
-# Interactive mode with Gemini
-interpreter-smol -i
+# Launch evolving agent system
+interpreter-evolve
 
-# Use a specific model
-interpreter-smol -i --model openai --api-key your-api-key
-
-# Run a single command
-interpreter-smol "Create a simple web server in Python"
+# With custom workspace
+interpreter-evolve -w ./my_agents
 ```
-
-## 🔑 API Keys Setup
-
-Set up your API keys as environment variables:
-
-```bash
-# For Gemini (default)
-export GOOGLE_API_KEY=your_api_key_here
-
-# For OpenAI
-export OPENAI_API_KEY=your_api_key_here
-
-# For Anthropic
-export ANTHROPIC_API_KEY=your_api_key_here
-
-# For Hugging Face
-export HF_API_TOKEN=your_api_key_here
-```
-
-## 🛠️ Core Components
-
-### Enhanced Python Interpreter
-
-Our EnhancedPythonInterpreter provides unrestricted system access with helpful utilities:
-
-```python
-from interpreter_smol import Interpreter
-
-interpreter = Interpreter(tools=["enhanced_python"])
-
-# Full system access
-interpreter.run("""
-import os
-print("Current directory:", os.getcwd())
-
-# Use helper functions
-result = run_shell("ls -la")
-print(result)
-
-# Easy file operations
-write_file("test.txt", "Hello World!")
-content = read_file("test.txt")
-""")
-```
-
-### Evolving Agent System
-
-Launch and interact with evolving agents via CLI:
-
-```bash
-# Start the evolving agent system interactively
-interpreter-evolve -i
-
-# Or with specific settings
-interpreter-evolve -w ./my_agents --model openai --verbose
-```
-
-Or use programmatically:
 
 ```python
 from interpreter_smol.agents import EvolvingAgentSystem
 
-# Initialize the system
-system = EvolvingAgentSystem(
-    model_type="gemini",
-    workspace_dir="./agent_workspace"
-)
+system = EvolvingAgentSystem(workspace_dir="./agents")
 
-# Create a new agent
-system.interpreter.run("""
-Create an agent that can:
-1. Search the web
-2. Process CSV files
-3. Generate charts
-Name it 'data_analyst'
-""")
+# Create an agent
+system.run("Create an agent called 'researcher' that searches the web and summarizes findings")
 
 # Use the agent
-system.interpreter.run("data_analyst, analyze sales.csv and create a trend chart")
+system.run("researcher, find recent news about AI")
 
-# List available agents
-system.interpreter.run("List all available agents")
-
-# Delete an agent
-system.interpreter.run("Delete the 'data_analyst' agent")
+# List agents
+system.run("List all agents")
 ```
 
-The evolving agent system provides:
-- 🤖 Agent Creation & Management
-- 📁 Persistent Agent Storage
-- 🔧 Tool Distribution
-- 🧠 Custom System Prompts
-- 🔄 Dynamic Loading/Unloading
+## Available Tools
 
-See [EVOLVE.md](EVOLVE.md) for more details on the Evolving Agent System.
+| Tool | Description |
+|------|-------------|
+| `enhanced_python` | Full system Python execution |
+| `web_search` | DuckDuckGo web search |
+| `visit_webpage` | Extract webpage content |
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 interpreter_smol/
-├── agents/               # Agent implementations
-│   ├── evolving_agent.py # Self-evolving agent system
-│   └── vision_browser.py # Vision-capable web browser
-├── core/                # Core functionality
-│   ├── interpreter.py   # Main interpreter class
-│   └── models/         # Model integrations
-├── tools/               # Tool implementations
-│   ├── enhanced_python.py # Enhanced Python interpreter
-│   └── local_python_executor_unrestricted.py # Unrestricted executor
-├── prompts/             # System prompts
-│   ├── code_agent.yaml  # CodeAgent prompt template
-│   └── evolving_agent.yaml # Evolving agent prompt
-└── examples/            # Usage examples
+├── core/
+│   ├── interpreter.py    # Main interpreter
+│   └── ui.py             # Rich terminal UI
+├── agents/
+│   └── evolving_agent.py # Evolving agent system
+├── tools/
+│   └── enhanced_python.py # Python execution
+└── prompts/
+    └── code_agent.yaml    # System prompts
 ```
 
-## 🎮 Available Tools
+## Troubleshooting
 
-- **enhanced_python**: Full system access Python interpreter
-- **web_search**: DuckDuckGo web search capability
-- **visit_webpage**: Web page content extraction
-- More tools can be added through the smolagents integration!
+**API Key Issues**
+```bash
+# Check your key is set
+echo $GOOGLE_API_KEY
+echo $OPENAI_API_KEY
 
-## 🎯 Examples
-
-### Different Models
-
-```python
-# Gemini
-interpreter = Interpreter(model="gemini")
-
-# OpenAI (GPT-4)
-interpreter = Interpreter(
-    model="openai",
-    model_id="gpt-4"
-)
-
-# Anthropic (Claude)
-interpreter = Interpreter(
-    model="anthropic",
-    model_id="claude-3-sonnet"
-)
-
-# Hugging Face (e.g., Mixtral)
-interpreter = Interpreter(
-    model="hf",
-    model_id="mistralai/Mixtral-8x7B-Instruct-v0.1"
-)
+# Or pass directly
+interpreter-smol -k your_api_key "hello"
 ```
 
-### Custom Tools
+**Missing Dependencies**
+```bash
+# Install all dependencies
+pip install -e ".[complete]"
 
-```python
-from smolagents import tool
-
-@tool
-def custom_tool(param1: str, param2: int) -> str:
-    """Your tool description here."""
-    # Tool implementation
-    return f"Processed {param1} {param2} times"
-
-# Add to interpreter
-interpreter = Interpreter(tools=["enhanced_python", custom_tool])
+# Or specific provider
+pip install -e ".[openai]"
 ```
 
-## 🔧 Troubleshooting
+**Import Errors**
+```bash
+# Make sure you're in the right directory
+cd interpreter_smolagent
+pip install -e .
+```
 
-1. **API Key Issues**
-   - Check that your API keys are set correctly
-   - Try running with `verbose=True` for more details
+## Contributing
 
-2. **Import Errors**
-   - Make sure all dependencies are installed: `pip install -r requirements.txt`
-   - For Gemini: `pip install google-genai`
+Contributions welcome! This project aims to be a simpler, more hackable alternative to Open Interpreter.
 
-3. **Permission Issues**
-   - enhanced_python requires appropriate system permissions
-   - Try running with restricted tools if needed
+## License
 
-## 🤝 Contributing
-
-Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-## 📄 License
-
-[MIT License](LICENSE)
+MIT License
 
 ---
 
-**Note**: This project is built on top of smolagents and aims to provide a simpler, more flexible alternative to Open Interpreter. While we provide full system access through the enhanced_python tool, please use it responsibly!
+Built with [smolagents](https://github.com/huggingface/smolagents) and [Rich](https://github.com/Textualize/rich)
