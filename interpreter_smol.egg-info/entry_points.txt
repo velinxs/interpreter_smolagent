@@ -1,3 +1,0 @@
-[console_scripts]
-interpreter-evolve = interpreter_smol.agents.evolving_agent:main
-interpreter-smol = interpreter_smol.core.interpreter:main

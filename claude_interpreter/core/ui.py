@@ -45,15 +45,15 @@ INTERPRETER_THEME = Theme({
 
 # ASCII Art banner
 BANNER = r"""
-  ___       _                          _
- |_ _|_ __ | |_ ___ _ __ _ __  _ __ ___| |_ ___ _ __
-  | || '_ \| __/ _ \ '__| '_ \| '__/ _ \ __/ _ \ '__|
-  | || | | | ||  __/ |  | |_) | | |  __/ ||  __/ |
- |___|_| |_|\__\___|_|  | .__/|_|  \___|\__\___|_|
-                        |_|          [bold cyan]smol edition[/]
+   ____ _                 _
+  / ___| | __ _ _   _  __| | ___
+ | |   | |/ _` | | | |/ _` |/ _ \
+ | |___| | (_| | |_| | (_| |  __/
+  \____|_|\__,_|\__,_|\__,_|\___|
+  [bold cyan]interpreter[/]  [dim]powered by Claude Code[/]
 """
 
-MINI_BANNER = "[bold bright_green]interpreter-smol[/] [dim]v0.3.0[/]"
+MINI_BANNER = "[bold bright_green]claude-interpreter[/] [dim]v0.4.0[/]"
 
 
 class InterpreterUI:
@@ -67,6 +67,7 @@ class InterpreterUI:
             self.console = None
         self.start_time = time.time()
         self.message_count = 0
+        self._streaming = False
 
     def print(self, *args, **kwargs):
         """Print with Rich if available, else fallback to standard print."""
@@ -74,6 +75,29 @@ class InterpreterUI:
             self.console.print(*args, **kwargs)
         else:
             print(*args, **kwargs)
+
+    def print_assistant_start(self):
+        """Mark the start of assistant response streaming."""
+        self._streaming = True
+        if not HAS_RICH:
+            print("\n", end="", flush=True)
+            return
+        self.console.print()
+
+    def print_stream(self, chunk: str):
+        """Print a streaming text chunk (no newline added)."""
+        if not HAS_RICH:
+            print(chunk, end="", flush=True)
+            return
+        self.console.print(chunk, end="", highlight=False)
+
+    def print_stream_end(self):
+        """Mark end of streaming response."""
+        self._streaming = False
+        if not HAS_RICH:
+            print(flush=True)
+            return
+        self.console.print()
 
     def print_banner(self, show_full: bool = True):
         """Display the interpreter banner."""
