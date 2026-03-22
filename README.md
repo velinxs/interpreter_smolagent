@@ -1,41 +1,58 @@
 # interpreter-smol: Installation and Usage Guide
 
-This guide will help you set up and use `interpreter-smol`, a thin wrapper around SmolaGents that provides an Open-Interpreter-like experience with Gemini support.
+This guide will help you set up and use `interpreter-smol`, a thin wrapper around SmolAgents that provides an Open-Interpreter-like experience with Gemini support.
 
-## Installation
-
-1. Install the required packages:
+## Quick Start
 
 ```bash
-# Install SmolaGents and base requirements
-pip install smolagents
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Unix/macOS
+# or
+.venv\Scripts\activate    # On Windows
 
-# Install Gemini support (required for default model)
-pip install google-genai
-```
-
-2. Download and install the interpreter-smol package:
-
-```bash
-# Clone the repository
-git clone https://github.com/your-username/interpreter-smol.git
-cd interpreter-smol
-
-# Install the package
+# Install the package (includes support for Gemini, OpenAI, Anthropic, and OpenRouter via LiteLLM)
 pip install -e .
+
+# Run the interpreter
+interpreter-smol          # Basic interpreter
+# or
+interpreter-evolve        # Evolving agent version powered by smolagents
 ```
 
-3. Set up your API keys as environment variables:
+## Installation Options
 
-```bash
-# For Gemini (recommended)
-export GOOGLE_API_KEY="your-api-key-here"
+1. Basic Installation:
 
-# For other providers (optional)
-export OPENAI_API_KEY="your-api-key-here"
-export ANTHROPIC_API_KEY="your-api-key-here"
-export HF_API_TOKEN="your-api-key-here"
-```
+   ```bash
+   # Clone the repository
+   git clone https://github.com/your-username/interpreter-smol.git
+   cd interpreter-smol
+
+   # Install with basic dependencies
+   pip install -e .
+   ```
+
+2. Additional Features:
+
+   ```bash
+   # For Hugging Face models:
+   pip install -e .[hf]
+
+   # For all features including data science tools:
+   pip install -e .[complete]
+   ```
+
+3. Set up your API keys:
+
+   ```bash
+   # Set up your API keys as environment variables:
+   export GOOGLE_API_KEY="your-api-key-here"      # For Gemini
+   export OPENAI_API_KEY="your-api-key-here"      # For OpenAI
+   export ANTHROPIC_API_KEY="your-api-key-here"   # For Anthropic
+   export OPENROUTER_API_KEY="your-api-key-here"  # For OpenRouter
+   export HF_API_TOKEN="your-api-key-here"        # For Hugging Face
+   ```
 
 ## Basic Usage
 
@@ -45,19 +62,19 @@ The command line interface is designed to be simple and familiar to Open-Interpr
 
 ```bash
 # Basic usage (defaults to Gemini model)
-interpreter-smol "Write a Python function to calculate the Fibonacci sequence"
+interpreter-smol "What are the 6th through 8th Fibonacci numbers?"
 
 # Start an interactive chat session
 interpreter-smol
 
 # Specify a different model provider
-interpreter-smol --model openai "Write a function to calculate prime numbers"
+interpreter-smol --model openai "Find the 619th prime number"
 
 # Enable specific tools
 interpreter-smol --tools unrestricted_python web_search "Find the current Bitcoin price and plot it"
 
 # Allow additional Python imports
-interpreter-smol --imports numpy pandas matplotlib.pyplot scipy "Create a visualization of the sine function"
+interpreter-smol --imports scipy "Create a visualization of the sine function"
 
 # Enable verbose output
 interpreter-smol -v "Calculate the factorial of 10"
@@ -74,7 +91,7 @@ from interpreter_smol import Interpreter
 interpreter = Interpreter()
 
 # Run a single prompt
-result = interpreter.run("Write a Python function to calculate prime numbers")
+result = interpreter.run("Count the number of words in this sentence.")
 
 # Start an interactive chat session
 interpreter.chat("Help me analyze this dataset")
@@ -94,7 +111,7 @@ custom_interpreter.run("Analyze recent stock market trends")
 
 The following tools are available:
 
-- `unrestricted_python`: Execute Python code
+- `unrestricted_python`: Execute Python code with full system access
 - `web_search`: Search the web with DuckDuckGo
 - `visit_webpage`: Visit and extract content from a webpage
 
@@ -119,41 +136,25 @@ The following tools are available:
 | `-i`, `--interactive` | Start in interactive mode | `False` |
 | `-v`, `--verbose` | Enable verbose output | `False` |
 
-## Advanced Usage with SmolaGents
+## Advanced Usage with SmolAgents
 
-For more advanced use cases, you can access the SmolaGents functionality directly:
+For more advanced use cases, you can access the SmolAgents functionality directly:
 
 ```python
-from smolagents import CodeAgent
-from smolagents import LiteLLMModel
+from smolagents import CodeAgent, LiteLLMModel
 from smolagents.default_tools import TOOL_MAPPING
+from interpreter_smol.tools import UnrestrictedPythonInterpreter
 
 # Create a custom Gemini model
 model = LiteLLMModel(model_id="gemini/gemini-2.0-flash")
 
-# Create an agent with specific tools
+# Create an agent with our unrestricted Python interpreter
 agent = CodeAgent(
-    tools=[TOOL_MAPPING["unrestricted_python"](), TOOL_MAPPING["web_search"]()],
+    tools=[UnrestrictedPythonInterpreter(), TOOL_MAPPING["web_search"]()],
     model=model,
-    additional_authorized_imports=["numpy", "pandas"],
     verbosity_level=2
 )
 
 # Run the agent
 agent.run("Your complex task here")
 ```
-
-## Differences from Open-Interpreter
-
-interpreter-smol offers several advantages compared to Open-Interpreter:
-
-1. **Native Gemini 2.0 support**: First-class integration with Google's latest Gemini models
-2. **Modern agent framework**: Built on SmolaGents, providing a more robust foundation
-3. **Enhanced security**: Better code execution security options
-4. **Simplified implementation**: Thin wrapper focused on essential functionality
-5. **Open-source foundation**: Built on the well-maintained SmolaGents library
-
-## Limitations
-
-- Some advanced features from Open-Interpreter (like vision) require additional setup
-- Currently focused on core functionality; some specialized features may not be available yet

@@ -1,11 +1,11 @@
 # Migration Guide: Moving from Open-Interpreter to interpreter-smol
 
-This guide helps Open-Interpreter users transition to interpreter-smol. The migration should be straightforward as interpreter-smol is designed to provide a similar experience while leveraging the more robust SmolaGents framework.
+This guide helps Open-Interpreter users transition to interpreter-smol. The migration should be straightforward as interpreter-smol is designed to provide a similar experience while leveraging the more robust SmolAgents framework.
 
 ## Why Migrate?
 
 - **Native Gemini 2.0 Support**: First-class integration with Google's latest Gemini models
-- **More Robust Framework**: Built on SmolaGents, a well-maintained agent framework
+- **More Robust Framework**: Built on SmolAgents, a well-maintained agent framework
 - **Enhanced Security**: Better code execution isolation options
 - **Active Development**: Regular updates and community support
 - **Simple Implementation**: Focused on essential functionality
@@ -153,9 +153,9 @@ interpreter = Interpreter(model="gemini")
 interpreter.run(f"{system_instruction}\n\nAnalyze this dataset and create visualizations.")
 ```
 
-### Using SmolaGents Directly
+### Using SmolAgents Directly
 
-For more advanced customization, you can use SmolaGents directly:
+For more advanced customization, you can use SmolAgents directly:
 
 ```python
 from smolagents import CodeAgent
@@ -203,7 +203,7 @@ ValueError: Unable to find model with ID: gemini-xyz
 **Solution:**
 Check that you're using a valid model ID for the provider:
 - Gemini: "gemini-2.0-flash", "gemini-2.0-pro"
-- OpenAI: "gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo" 
+- OpenAI: "gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"
 - Anthropic: "claude-3-5-sonnet-20240620", "claude-3-opus-20240229"
 
 ### Issue: Tool Not Available
@@ -214,7 +214,7 @@ Warning: Unknown tool 'x'. Available tools: python_interpreter, web_search, visi
 ```
 
 **Solution:**
-Check the available tools in SmolaGents or add custom tools:
+Check the available tools in SmolAgents or add custom tools:
 
 ```python
 from smolagents.default_tools import TOOL_MAPPING
@@ -223,6 +223,6 @@ print(list(TOOL_MAPPING.keys()))
 
 ## Further Resources
 
-- [SmolaGents Documentation](https://huggingface.co/docs/smolagents)
+- [SmolAgents Documentation](https://huggingface.co/docs/smolagents)
 - [interpreter-smol GitHub Repository](https://github.com/your-username/interpreter-smol)
 - [Google GenAI Documentation](https://ai.google.dev/docs)

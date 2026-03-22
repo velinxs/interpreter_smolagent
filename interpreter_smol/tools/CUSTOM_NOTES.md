@@ -1,6 +1,6 @@
-# 🔓 Custom SmolaGents Modifications
+# 🔓 Custom SmolAgents Modifications
 
-This directory contains modified versions of specific SmolaGents components to enable unrestricted functionality.
+This directory contains modified versions of specific SmolAgents components to enable unrestricted functionality.
 
 ## Modified Components
 
