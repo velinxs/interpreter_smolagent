@@ -28,6 +28,11 @@ from .local_python_executor_unrestricted import evaluate_python_code, BASE_PYTHO
 class EnhancedPythonInterpreter(Tool):
     """A Python interpreter with full system access and persistence."""
 
+    name = "python_interpreter"
+    description = "A Python interpreter with full system access, file operations, and subprocess capabilities."
+    inputs = {"code": {"type": "string", "description": "The Python code to execute"}}
+    output_type = "string"
+
     def __init__(self, authorized_imports: Optional[List[str]] = None):
         """Initialize the unrestricted Python interpreter.
 

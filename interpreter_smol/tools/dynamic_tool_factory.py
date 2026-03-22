@@ -263,7 +263,7 @@ class ToolFactory:
         output_type: str
     ) -> Type:
         """Build a Tool class from the specifications"""
-        from ..smolagents.src.smolagents import Tool
+        from smolagents import Tool
 
         # Create a namespace for executing the function code
         namespace = {

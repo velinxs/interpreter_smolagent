@@ -13,8 +13,8 @@ from typing import List, Dict, Optional, Any, Type
 from pathlib import Path
 import json
 
-from ..smolagents.src.smolagents import CodeAgent, Tool
-from ..smolagents.src.smolagents.models import LiteLLMModel
+from smolagents import CodeAgent, Tool
+from smolagents.models import LiteLLMModel
 from ..tools.dynamic_tool_factory import (
     ToolFactory,
     LLMToolGenerator,
@@ -114,13 +114,15 @@ class SelfImprovingAgent:
     def _initialize_model(self, model: str, model_id: Optional[str], temperature: float, max_tokens: int):
         """Initialize the LLM model"""
         if model_id is None:
-            # Default model IDs
+            # Default model IDs (updated for Gemini 3 - Dec 2025)
             model_ids = {
-                "gemini": "gemini/gemini-2.0-flash-exp",
+                "gemini": "gemini/gemini-3-flash-preview",  # Latest Gemini 3 Flash
+                "gemini-flash": "gemini/gemini-3-flash-preview",  # Explicit Flash
+                "gemini-pro": "gemini/gemini-3-pro-preview",  # Gemini 3 Pro for complex tasks
                 "openai": "gpt-4",
                 "anthropic": "claude-sonnet-4-5-20250929"
             }
-            model_id = model_ids.get(model, "gemini/gemini-2.0-flash-exp")
+            model_id = model_ids.get(model, "gemini/gemini-3-flash-preview")
 
         return LiteLLMModel(
             model_id=model_id,
@@ -131,7 +133,7 @@ class SelfImprovingAgent:
     def _load_initial_tools(self, tool_names: List[str]):
         """Load initial tools"""
         from ..tools.enhanced_python import EnhancedPythonInterpreter
-        from ..smolagents.src.smolagents.default_tools import TOOL_MAPPING
+        from smolagents.default_tools import TOOL_MAPPING
 
         # Tool mapping with enhanced Python
         available_tools = {
@@ -190,7 +192,8 @@ class SelfImprovingAgent:
                 },
                 "tool_name": {
                     "type": "string",
-                    "description": "Optional tool name"
+                    "description": "Optional tool name",
+                    "nullable": True
                 }
             }
             output_type = "string"
@@ -272,8 +275,8 @@ class SelfImprovingAgent:
             description = "Read source code from the codebase"
             inputs = {
                 "file_path": {"type": "string", "description": "Path to file"},
-                "start_line": {"type": "integer", "description": "Optional start line"},
-                "end_line": {"type": "integer", "description": "Optional end line"}
+                "start_line": {"type": "integer", "description": "Optional start line", "nullable": True},
+                "end_line": {"type": "integer", "description": "Optional end line", "nullable": True}
             }
             output_type = "string"
 
@@ -290,7 +293,7 @@ class SelfImprovingAgent:
             description = "Search for code patterns in the codebase"
             inputs = {
                 "pattern": {"type": "string", "description": "Search pattern"},
-                "file_pattern": {"type": "string", "description": "Optional file pattern like '*.py'"}
+                "file_pattern": {"type": "string", "description": "Optional file pattern like '*.py'", "nullable": True}
             }
             output_type = "string"
 
@@ -447,7 +450,27 @@ class SelfImprovingAgent:
 
     def _create_agent(self) -> CodeAgent:
         """Create the underlying CodeAgent"""
-        tools = [tool_class() for tool_class in self.tool_registry.get_all_tools().values()]
+        # Create tool instances, handling those that need special constructor args
+        tools = []
+        for tool_class in self.tool_registry.get_all_tools().values():
+            tool_name = getattr(tool_class, 'name', tool_class.__name__)
+
+            # Handle meta-tools that need constructor arguments
+            if tool_name == 'read_code':
+                tools.append(tool_class(self.codebase_nav))
+            elif tool_name == 'search_code':
+                tools.append(tool_class(self.codebase_nav))
+            elif tool_name == 'get_project_summary':
+                tools.append(tool_class(self.codebase_nav))
+            elif tool_name == 'deploy_claude_agent':
+                tools.append(tool_class(self.claude_manager))
+            elif tool_name == 'check_claude_task':
+                tools.append(tool_class(self.claude_manager))
+            elif tool_name == 'create_tool':
+                tools.append(tool_class(self))
+            else:
+                # Regular tools can be instantiated without args
+                tools.append(tool_class())
 
         # Load custom prompt
         prompt_path = Path(__file__).parent.parent / "prompts" / "self_aware_agent.yaml"
