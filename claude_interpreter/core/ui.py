@@ -151,13 +151,13 @@ class InterpreterUI:
         # Quick help
         help_text = """
 [dim]Commands:[/]
-  [bold]exit[/], [bold]quit[/], [bold]q[/]  - Exit the interpreter
+  [bold]exit[/] / [bold]q[/]        - Quit
   [bold]!<cmd>[/]          - Run shell command (e.g., !ls -la)
+  [bold]shell[/]           - Drop into terminal ([bold]exit[/] to return)
   [bold]?[/]               - Show help
   [bold]clear[/]           - Clear screen
-  [bold]reset[/]           - Reset conversation
-  [bold]history[/]         - Show conversation history
-  [bold]save[/]            - Save conversation to file
+  [bold]reset[/]           - Reset session
+  [bold]cost[/]            - Show cost / turns
 
 [dim]Tips:[/]
   • Use [bold]\"\"\"[/] for multiline input
@@ -179,11 +179,12 @@ class InterpreterUI:
 Commands:
   exit, quit, q  - Exit the interpreter
   !<cmd>         - Run shell command
+  shell          - Drop into interactive shell (exit to return)
   ?              - Show this help
   clear          - Clear screen
-  reset          - Reset conversation
-  history        - Show conversation history
-  save           - Save conversation to file
+  reset          - Reset session
+  cost           - Show cost / turn count
+  Ctrl+Z         - Suspend to terminal (fg to return)
             """)
             return
 
@@ -194,13 +195,12 @@ Commands:
 |---------|-------------|
 | `exit`, `quit`, `q` | Exit the interpreter |
 | `!<command>` | Run a shell command directly |
+| `shell` | Drop into interactive shell (`exit` to return) |
 | `?` | Show this help message |
 | `clear` | Clear the screen |
-| `reset` | Reset conversation history |
-| `history` | Show conversation history |
-| `save [file]` | Save conversation to file |
-| `config` | Show current configuration |
-| `model <name>` | Switch to a different model |
+| `reset` | Reset session (clears conversation + saved state) |
+| `cost` | Show total cost and turn count |
+| `Ctrl+Z` | Suspend to terminal (`fg` to return) |
 
 ## Tips
 

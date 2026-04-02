@@ -119,7 +119,11 @@ class Interpreter:
 
     def _build_cmd(self, prompt: str) -> List[str]:
         """Build the claude CLI command."""
-        cmd = ["claude", "-p", "--output-format", "stream-json", "--verbose"]
+        cmd = [
+            "claude", "-p",
+            "--output-format", "stream-json",
+            "--verbose",
+        ]
 
         cmd += ["--model", self.model]
 
@@ -158,6 +162,7 @@ class Interpreter:
             return "", None
 
         full_text = ""
+        printed_len = 0  # Track how much we've already printed (stream sends cumulative text)
         session_id = None
 
         for line in proc.stdout:
@@ -175,9 +180,13 @@ class Interpreter:
                 msg = event.get("message", {})
                 for block in msg.get("content", []):
                     if block.get("type") == "text":
-                        chunk = block.get("text", "")
-                        full_text += chunk
-                        self.ui.print_stream(chunk)
+                        text = block.get("text", "")
+                        # Only print the NEW portion (stream events contain full accumulated text)
+                        if len(text) > printed_len:
+                            delta = text[printed_len:]
+                            self.ui.print_stream(delta)
+                            printed_len = len(text)
+                        full_text = text
 
             elif etype == "result":
                 session_id = event.get("session_id")
@@ -292,6 +301,13 @@ class Interpreter:
                     elif user_input.lower() == "cost":
                         self.ui.print_info(f"Total cost: ${self.total_cost:.4f} | Turns: {self.turn_count}")
                         continue
+                    elif user_input.lower() == "shell":
+                        # Drop into interactive subshell — safe, no user-controlled args
+                        shell = os.environ.get("SHELL", "/bin/bash")
+                        self.ui.print_info(f"Dropping to {shell}. Type 'exit' to return.")
+                        subprocess.run([shell])
+                        self.ui.print_info("Back in interpreter.")
+                        continue
                     elif user_input.startswith("!"):
                         cmd = user_input[1:].strip()
                         if cmd:
@@ -300,7 +316,6 @@ class Interpreter:
                     elif user_input.startswith('"""'):
                         user_input = self._read_multiline(user_input)
 
-                    self.ui.print_user_message(user_input)
                     self.run(user_input)
 
                 except KeyboardInterrupt:
